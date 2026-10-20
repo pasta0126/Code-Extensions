@@ -1,0 +1,41 @@
+{
+  "name": "kanban-json",
+  "displayName": "Kanban JSON",
+  "description": "Tablero Kanban alimentado por un fichero kanban.json, con vista Raw para editar el JSON.",
+  "version": "0.0.1",
+  "publisher": "pasta0126",
+  "license": "Unlicense",
+  "engines": { "vscode": "^1.90.0" },
+  "categories": ["Other"],
+  "main": "./dist/extension.js",
+  "activationEvents": [],
+  "contributes": {
+    "customEditors": [
+      {
+        "viewType": "kanbanJson.board",
+        "displayName": "Kanban",
+        "selector": [{ "filenamePattern": "kanban.json" }],
+        "priority": "default"
+      }
+    ],
+    "commands": [
+      { "command": "kanbanJson.createBoard", "title": "Kanban: Crear kanban.json de ejemplo" },
+      { "command": "kanbanJson.openAsText", "title": "Kanban: Abrir como texto" },
+      { "command": "kanbanJson.openAsBoard", "title": "Kanban: Abrir como tablero" }
+    ]
+  },
+  "scripts": {
+    "build": "node esbuild.mjs",
+    "watch": "node esbuild.mjs --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/vscode": "^1.90.0",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.6.0",
+    "vitest": "^3.0.0"
+  }
+}

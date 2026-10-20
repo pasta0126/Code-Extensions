@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+out/
+*.tsbuildinfo
+*.vsix
+
+# Tests / coverage
+coverage/
+.vitest-cache/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode-test/
+
+# Claude Code local files
+.claude/settings.local.json
+.claude/worktrees/
+
+# Local session notes
+sessions.txt

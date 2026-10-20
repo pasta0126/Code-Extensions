@@ -1,0 +1,138 @@
+{
+  "board": "Ejemplo Kanban",
+  "columns": [
+    {
+      "id": "backlog",
+      "name": "Backlog",
+      "tasks": [
+        {
+          "id": "TASK-101",
+          "title": "Revisar accesos a Portal Informes",
+          "description": "Comprobar permisos de usuarios tras la migración de servidor.",
+          "assignee": "Guillermo García Carballo",
+          "priority": "media",
+          "labels": ["portal-informes", "accesos"],
+          "createdAt": "2026-10-01",
+          "dueDate": "2026-11-05"
+        },
+        {
+          "id": "TASK-102",
+          "title": "Documentar flujo de onboarding en Darwin",
+          "description": "Recoger pasos actuales del proceso para la nueva guía interna.",
+          "assignee": "Guillermo García Carballo",
+          "priority": "baja",
+          "labels": ["darwin", "documentacion"],
+          "createdAt": "2026-10-05",
+          "dueDate": null
+        },
+        {
+          "id": "TASK-103",
+          "title": "Actualizar colección Postman de Bullhorn",
+          "description": "Añadir los nuevos endpoints de candidatos a la colección.",
+          "assignee": "Guillermo García Carballo",
+          "priority": "media",
+          "labels": ["bullhorn", "postman"],
+          "createdAt": "2026-10-10",
+          "dueDate": null
+        }
+      ]
+    },
+    {
+      "id": "todo",
+      "name": "Por hacer",
+      "tasks": [
+        {
+          "id": "TASK-104",
+          "title": "Migrar rutas UNC de mpgclwpes0019 a vme3espw037",
+          "description": "Buscar referencias antiguas en scripts y notas y actualizarlas al nuevo alias.",
+          "assignee": "Guillermo García Carballo",
+          "priority": "alta",
+          "labels": ["infraestructura", "servidores"],
+          "createdAt": "2026-10-12",
+          "dueDate": "2026-10-24"
+        },
+        {
+          "id": "TASK-105",
+          "title": "Revisar queries de Gullon pendientes",
+          "description": "Validar los scripts SQL antes de pasarlos a producción.",
+          "assignee": "Guillermo García Carballo",
+          "priority": "media",
+          "labels": ["gullon", "sql"],
+          "createdAt": "2026-10-14",
+          "dueDate": "2026-10-28"
+        }
+      ]
+    },
+    {
+      "id": "in-progress",
+      "name": "En progreso",
+      "tasks": [
+        {
+          "id": "TASK-106",
+          "title": "Depurar script auto-commit.ps1",
+          "description": "Ajustar el mensaje de commit generado automáticamente cuando hay muchos ficheros.",
+          "assignee": "Guillermo García Carballo",
+          "priority": "alta",
+          "labels": ["git", "powershell"],
+          "createdAt": "2026-10-15",
+          "dueDate": "2026-10-21",
+          "startedAt": "2026-10-18"
+        },
+        {
+          "id": "TASK-107",
+          "title": "Revisar PowerfullBookmarks en local",
+          "description": "Probar start-server.ps1 tras el último cambio de puerto por defecto.",
+          "assignee": "Guillermo García Carballo",
+          "priority": "baja",
+          "labels": ["powerfullbookmarks"],
+          "createdAt": "2026-10-17",
+          "dueDate": null,
+          "startedAt": "2026-10-19"
+        }
+      ]
+    },
+    {
+      "id": "in-review",
+      "name": "Bloqueado",
+      "tasks": [
+        {
+          "id": "TASK-108",
+          "title": "Validar informe mensual Synergy",
+          "description": "Pendiente de confirmación por parte del equipo de Synergy antes de publicar.",
+          "assignee": "Guillermo García Carballo",
+          "priority": "media",
+          "labels": ["synergy", "informes"],
+          "createdAt": "2026-10-10",
+          "dueDate": "2026-10-22",
+          "reviewer": "Equipo Synergy"
+        }
+      ]
+    },
+    {
+      "id": "done",
+      "name": "Hecho",
+      "tasks": [
+        {
+          "id": "TASK-109",
+          "title": "Actualizar Mis_Datos_BH.md",
+          "description": "Revisados los IDs personales de Bullhorn tras el cambio de rol.",
+          "assignee": "Guillermo García Carballo",
+          "priority": "baja",
+          "labels": ["bullhorn", "documentacion"],
+          "createdAt": "2026-09-28",
+          "completedAt": "2026-10-03"
+        },
+        {
+          "id": "TASK-110",
+          "title": "Configurar tarea VS Code para auto-commit",
+          "description": "Añadida la tarea 'Git: Auto commit & push' con cierre automático del panel.",
+          "assignee": "Guillermo García Carballo",
+          "priority": "media",
+          "labels": ["vscode", "git"],
+          "createdAt": "2026-09-20",
+          "completedAt": "2026-09-25"
+        }
+      ]
+    }
+  ]
+}

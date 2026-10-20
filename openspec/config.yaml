@@ -1,0 +1,32 @@
+schema: spec-driven
+
+context: |
+  Proyecto: extensión de VS Code que muestra y mantiene un tablero Kanban a partir de un fichero kanban.json
+  (con vista Raw para editar el JSON).
+  Stack: TypeScript, esbuild, vitest, webview vanilla (sin framework).
+  Metodología: SDD (spec-driven development) con OpenSpec: primero propuesta/specs/diseño/tareas, luego código.
+  Estructura: src/board (núcleo puro, NO importa "vscode"), src/editor (adaptador VS Code), media/ (webview).
+  Idioma: specs y documentación en español; código e identificadores en inglés.
+  Modelo: Board > Column > Task. Los campos desconocidos de una tarea se conservan.
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+# Example:
+#   rules:
+#     proposal:
+#       - Keep proposals under 500 words
+#       - Always include a "Non-goals" section
+#     tasks:
+#       - Break tasks into chunks of max 2 hours
+
+# Per-operation guidance (optional)
+# Add advisory guidance for how apply and archive work should be conducted.
+# This is separate from artifact rules above.
+# Example:
+#   operations:
+#     apply:
+#       guidance:
+#         - Keep test summaries concise
+#     archive:
+#       guidance:
+#         - Summarize the archive outcome before finishing
