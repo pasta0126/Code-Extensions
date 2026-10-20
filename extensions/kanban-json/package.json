@@ -2,7 +2,7 @@
   "name": "kanban-json",
   "displayName": "Kanban JSON",
   "description": "Kanban board editor for kanban.json files.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "publisher": "pasta0126",
   "icon": "icon.png",
   "license": "Unlicense",

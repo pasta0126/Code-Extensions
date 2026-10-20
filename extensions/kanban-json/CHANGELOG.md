@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1
+
+- Icon now has a transparent background.
+
 ## 0.2.0
 
 - Removed the in-editor Raw tab; use **Open as text** to edit the JSON.
