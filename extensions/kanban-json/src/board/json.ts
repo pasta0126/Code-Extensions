@@ -114,6 +114,15 @@ function serializeTask(task: Task): Record<string, unknown> {
   return { ...out, ...task.extras };
 }
 
+/** Starter board used to initialize an empty kanban.json. */
+export function createInitialBoard(name: string): Board {
+  const column = (id: string, title: string) => ({ id, name: title, tasks: [] });
+  return {
+    board: name.trim() || 'Kanban',
+    columns: [column('backlog', 'Backlog'), column('in-progress', 'En curso'), column('done', 'Hecho')],
+  };
+}
+
 export function serializeBoard(board: Board): string {
   const out = {
     board: board.board,

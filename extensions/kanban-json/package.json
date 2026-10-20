@@ -2,7 +2,7 @@
   "name": "kanban-json",
   "displayName": "Kanban JSON",
   "description": "Editor de tableros Kanban para ficheros kanban.json, con vista de texto.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "pasta0126",
   "icon": "icon.png",
   "license": "Unlicense",

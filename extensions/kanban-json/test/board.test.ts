@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { parseBoard, serializeBoard } from '../src/board/json';
+import { createInitialBoard, parseBoard, serializeBoard } from '../src/board/json';
 import { BoardError } from '../src/board/model';
 import {
   addColumn,
@@ -97,5 +97,13 @@ describe('operaciones', () => {
 
   it('deleteTask', () => {
     expect(deleteTask(load(), 'TASK-109').columns[4]!.tasks).toHaveLength(1);
+  });
+});
+
+describe('board-model: inicialización', () => {
+  it('el tablero inicial es válido y hace round-trip', () => {
+    const board = createInitialBoard('Demo');
+    expect(board.columns.map((c) => c.id)).toEqual(['backlog', 'in-progress', 'done']);
+    expect(parseBoard(serializeBoard(board))).toEqual(board);
   });
 });

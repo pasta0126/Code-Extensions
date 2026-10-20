@@ -79,7 +79,7 @@
       updateRawStatus();
       return;
     }
-    app.replaceChildren(toolbar(), banners(), s.mode === 'raw' ? rawView() : kanbanView());
+    app.replaceChildren(toolbar(), banners(), s.mode === 'raw' ? rawView() : isEmptyDoc() ? emptyView() : kanbanView());
   }
 
   function renderToolbarAndBanners() {
@@ -101,9 +101,23 @@
     );
   }
 
+  const isEmptyDoc = () => s.hostText.trim() === '';
+
+  function emptyView() {
+    return h(
+      'div',
+      { class: 'empty-doc' },
+      h('p', {}, 'Este kanban.json está vacío.'),
+      h('p', {}, '¿Quieres inicializarlo con las columnas básicas (Backlog, En curso, Hecho)?'),
+      h('button', { onclick: () => post({ type: 'initialize' }) }, 'Inicializar tablero'),
+      ' ',
+      h('button', { class: 'link', onclick: () => setMode('raw') }, 'Editar en Raw'),
+    );
+  }
+
   function banners() {
     const box = h('div', { class: 'banners' });
-    if (s.mode === 'kanban' && s.error) {
+    if (s.mode === 'kanban' && s.error && !isEmptyDoc()) {
       box.append(
         h(
           'div',

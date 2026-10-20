@@ -25,4 +25,5 @@ export type WebviewMessage =
   | { type: 'op'; op: Operation }
   | { type: 'validateRaw'; text: string }
   | { type: 'applyRaw'; text: string }
+  | { type: 'initialize' }
   | { type: 'openAsText' };

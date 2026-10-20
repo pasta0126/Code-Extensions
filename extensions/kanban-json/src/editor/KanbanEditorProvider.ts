@@ -1,6 +1,7 @@
 import { randomBytes } from 'node:crypto';
+import * as path from 'node:path';
 import * as vscode from 'vscode';
-import { parseBoard, serializeBoard } from '../board/json';
+import { createInitialBoard, parseBoard, serializeBoard } from '../board/json';
 import { Board, BoardError } from '../board/model';
 import * as ops from '../board/operations';
 import { Operation, StateMessage, ValidationMessage, WebviewMessage } from './protocol';
@@ -54,6 +55,12 @@ export class KanbanEditorProvider implements vscode.CustomTextEditorProvider {
               parseBoard(msg.text); // refuse to write an invalid board
               await replaceAll(document, msg.text);
               break;
+            case 'initialize': {
+              if (document.getText().trim() !== '') throw new Error('El fichero no está vacío');
+              const folder = path.basename(path.dirname(document.uri.fsPath));
+              await replaceAll(document, serializeBoard(createInitialBoard(folder)));
+              break;
+            }
             case 'openAsText':
               await vscode.commands.executeCommand('vscode.openWith', document.uri, 'default');
               break;
