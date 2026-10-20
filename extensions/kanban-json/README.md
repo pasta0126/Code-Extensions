@@ -1,34 +1,50 @@
 # Kanban JSON
 
-Extensión de VS Code que muestra y mantiene un tablero Kanban a partir de un `kanban.json`.
+Gestiona un tablero Kanban dentro de VS Code a partir de un único fichero `kanban.json`, versionable en git.
 
-- **Vista Kanban**: columnas y tarjetas; crear/renombrar/borrar columnas, crear/editar/borrar tareas, arrastrar para mover.
-- **Vista Raw**: pestaña "Raw" en el mismo editor para ver y editar el JSON, con validación antes de aplicar.
-- El documento es la fuente de verdad (deshacer/rehacer, guardado y cambios externos funcionan).
-- Los campos que la extensión no conoce (`startedAt`, `completedAt`, `reviewer`, ...) se conservan.
+## Características
 
-Formato de ejemplo en [`examples/kanban.json`](examples/kanban.json).
+- **Vista Kanban**: columnas y tarjetas. Crea, renombra y elimina columnas; crea, edita y elimina tareas; arrastra tarjetas entre columnas o dentro de una columna.
+- **Vista Raw**: pestaña "Raw" en el mismo editor para ver y editar el JSON, con validación en vivo. Solo se puede aplicar si es válido.
+- **Siempre sincronizado**: el fichero es la fuente de verdad. Deshacer/rehacer, guardado y cambios externos (git, otro editor) se reflejan en ambas vistas.
+- **No pierde datos**: los campos que la extensión no conoce (`startedAt`, `completedAt`, `reviewer`, ...) se conservan al guardar.
 
-## Desarrollo
+## Uso
 
-```bash
-npm install
-npm test            # tests del núcleo (src/board)
-npm run typecheck
-npm run build
+1. Abre cualquier fichero llamado `kanban.json`: se muestra como tablero.
+2. O ejecuta **Kanban: Crear kanban.json de ejemplo** desde la paleta de comandos para empezar un tablero nuevo en tu carpeta.
+3. Pulsa **Raw** para editar el JSON o **Abrir como texto** para usar el editor de texto nativo.
+
+Comandos: `Kanban: Crear kanban.json de ejemplo`, `Kanban: Abrir como texto`, `Kanban: Abrir como tablero`.
+
+## Formato
+
+```json
+{
+  "board": "Mi tablero",
+  "columns": [
+    {
+      "id": "todo",
+      "name": "Por hacer",
+      "tasks": [
+        {
+          "id": "TASK-1",
+          "title": "Mi primera tarea",
+          "description": "Opcional",
+          "assignee": "Ana",
+          "priority": "alta",
+          "labels": ["ejemplo"],
+          "createdAt": "2026-10-20",
+          "dueDate": null
+        }
+      ]
+    }
+  ]
+}
 ```
 
-Desde la raíz del repo, abre la carpeta en VS Code y pulsa **F5** ("Run kanban-json") para abrir un Extension Development Host con `examples/`; abre `kanban.json`.
+`priority` admite `alta`, `media` o `baja`. Los ids de columna y de tarea deben ser únicos.
 
-## Desarrollo dirigido por especificaciones (OpenSpec)
+## Licencia
 
-Los cambios se especifican en `../../openspec/changes/` antes de implementarse. Cambio inicial:
-[`add-kanban-json-editor`](../../openspec/changes/add-kanban-json-editor/). Flujo con Claude Code: `/opsx:propose`, `/opsx:apply`, `/opsx:archive`.
-
-## Estructura
-
-```
-src/board/     núcleo puro (modelo, validación, JSON, operaciones) — sin imports de vscode
-src/editor/    CustomTextEditorProvider y protocolo de mensajes
-media/         webview (JS/CSS vanilla)
-```
+Dominio público ([Unlicense](LICENSE)).

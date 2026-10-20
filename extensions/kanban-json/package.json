@@ -1,12 +1,22 @@
 {
   "name": "kanban-json",
   "displayName": "Kanban JSON",
-  "description": "Tablero Kanban alimentado por un fichero kanban.json, con vista Raw para editar el JSON.",
+  "description": "Editor de tableros Kanban para ficheros kanban.json, con vista de texto.",
   "version": "0.0.1",
   "publisher": "pasta0126",
+  "icon": "icon.png",
   "license": "Unlicense",
-  "engines": { "vscode": "^1.90.0" },
-  "categories": ["Other"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pasta0126/Code-Extensions.git",
+    "directory": "extensions/kanban-json"
+  },
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
   "main": "./dist/extension.js",
   "activationEvents": [],
   "contributes": {
@@ -14,14 +24,27 @@
       {
         "viewType": "kanbanJson.board",
         "displayName": "Kanban",
-        "selector": [{ "filenamePattern": "kanban.json" }],
+        "selector": [
+          {
+            "filenamePattern": "kanban.json"
+          }
+        ],
         "priority": "default"
       }
     ],
     "commands": [
-      { "command": "kanbanJson.createBoard", "title": "Kanban: Crear kanban.json de ejemplo" },
-      { "command": "kanbanJson.openAsText", "title": "Kanban: Abrir como texto" },
-      { "command": "kanbanJson.openAsBoard", "title": "Kanban: Abrir como tablero" }
+      {
+        "command": "kanbanJson.createBoard",
+        "title": "Kanban: Crear kanban.json de ejemplo"
+      },
+      {
+        "command": "kanbanJson.openAsText",
+        "title": "Kanban: Abrir como texto"
+      },
+      {
+        "command": "kanbanJson.openAsBoard",
+        "title": "Kanban: Abrir como tablero"
+      }
     ]
   },
   "scripts": {
@@ -29,7 +52,8 @@
     "watch": "node esbuild.mjs --watch",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "package": "vsce package"
+    "package": "vsce package",
+    "vscode:prepublish": "node esbuild.mjs --production"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

@@ -1,5 +1,7 @@
 import { context, build } from 'esbuild';
 
+const production = process.argv.includes('--production');
+
 const options = {
   entryPoints: ['src/extension.ts'],
   bundle: true,
@@ -8,7 +10,7 @@ const options = {
   format: 'cjs',
   target: 'node20',
   external: ['vscode'],
-  sourcemap: true,
+  sourcemap: !production, // el bundle de producción se deja legible (sin minificar)
 };
 
 if (process.argv.includes('--watch')) {
