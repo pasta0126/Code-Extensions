@@ -5,8 +5,7 @@ Manage a Kanban board inside VS Code from a single `kanban.json` file that you c
 ## Features
 
 - **Kanban view**: columns and cards. Create, rename and delete columns; create, edit and delete tasks; drag cards between columns or within a column.
-- **Raw view**: a "Raw" tab in the same editor to view and edit the JSON, with live validation. It can only be applied when valid.
-- **Always in sync**: the file is the source of truth. Undo/redo, saving and external changes (git, another editor) are reflected in both views.
+- **Always in sync**: the file is the source of truth. Undo/redo, saving and external changes (git, another editor) are reflected in the board.
 - **No data loss**: fields the extension does not know about (`startedAt`, `completedAt`, `reviewer`, ...) are preserved on save.
 - **Empty file friendly**: opening a blank `kanban.json` offers to initialize it with the Backlog, In Progress and Done columns.
 
@@ -14,7 +13,7 @@ Manage a Kanban board inside VS Code from a single `kanban.json` file that you c
 
 1. Open any file named `kanban.json`: it is displayed as a board.
 2. Or run **Kanban: Create sample kanban.json** from the command palette to start a new board in your folder.
-3. Click **Raw** to edit the JSON, or **Open as text** to use the native text editor.
+3. Click **Open as text** to edit the JSON in the native text editor.
 
 Commands: `Kanban: Create sample kanban.json`, `Kanban: Open as Text`, `Kanban: Open as Board`.
 

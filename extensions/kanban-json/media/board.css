@@ -35,9 +35,6 @@ input:focus, textarea:focus, select:focus { outline: 1px solid var(--vscode-focu
   display: flex; align-items: center; gap: 12px; padding: 8px 12px;
   border-bottom: 1px solid var(--vscode-panel-border);
 }
-.tabs { display: flex; }
-.tab { border-radius: 0; background: none; border-bottom: 2px solid transparent; color: var(--vscode-foreground); }
-.tab.active { border-bottom-color: var(--vscode-focusBorder); font-weight: 600; }
 .title { flex: 1; opacity: .7; }
 
 .banners:empty { display: none; }
@@ -78,19 +75,6 @@ input:focus, textarea:focus, select:focus { outline: 1px solid var(--vscode-focu
 .due.overdue { color: var(--vscode-errorForeground); font-weight: 600; }
 .drop-marker { height: 3px; border-radius: 2px; background: var(--vscode-focusBorder); flex: none; }
 .empty { padding: 24px; opacity: .7; }
-
-/* Raw */
-.raw { flex: 1; display: flex; flex-direction: column; min-height: 0; }
-#raw {
-  flex: 1; resize: none; border-radius: 0; border-width: 0 0 1px 0;
-  font-family: var(--vscode-editor-font-family); font-size: var(--vscode-editor-font-size);
-  background: var(--vscode-editor-background); color: var(--vscode-editor-foreground);
-  tab-size: 2; white-space: pre;
-}
-.raw-bar { display: flex; align-items: center; gap: 8px; padding: 6px 12px; }
-#raw-status { flex: 1; font-size: .9em; }
-#raw-status.ok { opacity: .8; }
-#raw-status.bad { color: var(--vscode-errorForeground); }
 
 /* Dialogs */
 dialog {

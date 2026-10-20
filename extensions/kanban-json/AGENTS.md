@@ -1,6 +1,6 @@
 # AGENTS.md — kanban-json
 
-Extensión de VS Code (`kanban-json`) que muestra y mantiene un tablero Kanban a partir de un `kanban.json`, con una vista Raw para editar el JSON. Ver también el `AGENTS.md` de la raíz (`../../AGENTS.md`) (metodología SDD con OpenSpec y convenciones del repo).
+Extensión de VS Code (`kanban-json`) que muestra y mantiene un tablero Kanban a partir de un `kanban.json`; el JSON se edita con «Abrir como texto». Ver también el `AGENTS.md` de la raíz (`../../AGENTS.md`) (metodología SDD con OpenSpec y convenciones del repo).
 
 Specs: `openspec/changes/<cambio>/specs/kanban-json/`.
 

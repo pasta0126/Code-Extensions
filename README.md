@@ -4,7 +4,7 @@ Colección de extensiones de VS Code. Cada una vive en su carpeta dentro de `ext
 
 | Extensión | Descripción |
 |---|---|
-| [`kanban-json`](extensions/kanban-json/) | Tablero Kanban alimentado por un `kanban.json`, con vista Raw para editar el JSON. |
+| [`kanban-json`](extensions/kanban-json/) | Tablero Kanban alimentado por un `kanban.json`. |
 
 ## Desarrollo
 

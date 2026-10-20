@@ -1,18 +1,14 @@
-// Webview for kanban.json: Kanban and Raw modes. Talks to the extension host via postMessage.
+// Webview for kanban.json: Kanban board. Talks to the extension host via postMessage.
 (function () {
   const vscode = acquireVsCodeApi();
   const app = document.getElementById('app');
+  // Stored values stay as in kanban.json; only the displayed labels are English.
+  const PRIORITY_LABELS = { alta: 'High', media: 'Medium', baja: 'Low' };
 
-  const saved = vscode.getState() || {};
   const s = {
-    mode: saved.mode === 'raw' ? 'raw' : 'kanban',
     board: null,
     error: null,
     hostText: '',
-    rawDraft: '',
-    rawDirty: false,
-    conflict: false,
-    rawError: null, // validation result for the current draft
   };
 
   const post = (msg) => vscode.postMessage(msg);
@@ -34,73 +30,32 @@
     return el;
   }
 
-  function setMode(mode) {
-    s.mode = mode;
-    vscode.setState({ mode });
-    if (mode === 'raw' && !s.rawDirty) {
-      s.rawDraft = s.hostText;
-      s.rawError = s.error;
-    }
-    render();
-  }
-
   // ---------- messages from the host ----------
   window.addEventListener('message', (event) => {
     const msg = event.data;
     if (msg.type === 'state') {
-      const changed = msg.text !== s.hostText;
       s.hostText = msg.text;
       s.board = msg.board;
       s.error = msg.error;
-      if (msg.text === s.rawDraft) {
-        s.rawDirty = false;
-        s.conflict = false;
-        s.rawError = msg.error;
-      } else if (!s.rawDirty) {
-        s.rawDraft = msg.text;
-        s.rawError = msg.error;
-      } else if (changed) {
-        s.conflict = true;
-      }
       render();
-    } else if (msg.type === 'validation' && msg.text === s.rawDraft) {
-      s.rawError = msg.error;
-      updateRawStatus();
     }
   });
 
   // ---------- rendering ----------
   function render() {
-    const active = document.activeElement;
-    const keepRaw = active && active.id === 'raw' && s.mode === 'raw' && document.getElementById('raw');
-    if (keepRaw) {
-      // Don't rebuild the textarea while the user types in it.
-      renderToolbarAndBanners();
-      updateRawStatus();
-      return;
-    }
-    app.replaceChildren(toolbar(), banners(), s.mode === 'raw' ? rawView() : isEmptyDoc() ? emptyView() : kanbanView());
-  }
-
-  function renderToolbarAndBanners() {
-    const old = app.querySelectorAll('.toolbar, .banners');
-    const [t, b] = [toolbar(), banners()];
-    old[0].replaceWith(t);
-    old[1].replaceWith(b);
+    app.replaceChildren(toolbar(), banners(), isEmptyDoc() ? emptyView() : kanbanView());
   }
 
   function toolbar() {
-    const tab = (mode, label) =>
-      h('button', { class: 'tab' + (s.mode === mode ? ' active' : ''), onclick: () => setMode(mode) }, label);
     return h(
       'div',
       { class: 'toolbar' },
-      h('div', { class: 'tabs' }, tab('kanban', 'Kanban'), tab('raw', 'Raw')),
       h('span', { class: 'title' }, s.board ? s.board.board : ''),
-      h('button', { class: 'link', onclick: () => post({ type: 'openAsText' }) }, 'Open as text'),
+      h('button', { class: 'link', onclick: openAsText }, 'Open as text'),
     );
   }
 
+  const openAsText = () => post({ type: 'openAsText' });
   const isEmptyDoc = () => s.hostText.trim() === '';
 
   function emptyView() {
@@ -111,13 +66,13 @@
       h('p', {}, 'Do you want to initialize it with the basic columns (Backlog, In Progress, Done)?'),
       h('button', { onclick: () => post({ type: 'initialize' }) }, 'Initialize board'),
       ' ',
-      h('button', { class: 'link', onclick: () => setMode('raw') }, 'Edit in Raw'),
+      h('button', { class: 'link', onclick: openAsText }, 'Open as text'),
     );
   }
 
   function banners() {
     const box = h('div', { class: 'banners' });
-    if (s.mode === 'kanban' && s.error && !isEmptyDoc()) {
+    if (s.error && !isEmptyDoc()) {
       box.append(
         h(
           'div',
@@ -125,95 +80,11 @@
           h('strong', {}, 'Cannot display the board: '),
           s.error,
           ' ',
-          h('button', { onclick: () => setMode('raw') }, 'Fix in Raw'),
-        ),
-      );
-    }
-    if (s.mode === 'raw' && s.conflict) {
-      box.append(
-        h(
-          'div',
-          { class: 'banner warn' },
-          'The document changed while you were editing. ',
-          h(
-            'button',
-            {
-              onclick: () => {
-                s.rawDraft = s.hostText;
-                s.rawDirty = false;
-                s.conflict = false;
-                s.rawError = s.error;
-                render();
-              },
-            },
-            'Reload from document',
-          ),
+          h('button', { onclick: openAsText }, 'Open as text'),
         ),
       );
     }
     return box;
-  }
-
-  // ---------- Raw ----------
-  let validateTimer;
-  function rawView() {
-    const area = h('textarea', { id: 'raw', spellcheck: 'false', wrap: 'off' });
-    area.value = s.rawDraft;
-    area.addEventListener('input', () => {
-      s.rawDraft = area.value;
-      s.rawDirty = s.rawDraft !== s.hostText;
-      s.rawError = null;
-      clearTimeout(validateTimer);
-      validateTimer = setTimeout(() => post({ type: 'validateRaw', text: s.rawDraft }), 200);
-      updateRawStatus();
-    });
-    area.addEventListener('keydown', (e) => {
-      if (e.key === 'Tab') {
-        e.preventDefault();
-        document.execCommand('insertText', false, '  ');
-      } else if ((e.metaKey || e.ctrlKey) && e.key === 's') {
-        e.preventDefault();
-        applyRaw();
-      }
-    });
-    return h(
-      'div',
-      { class: 'raw' },
-      area,
-      h(
-        'div',
-        { class: 'raw-bar' },
-        h('span', { id: 'raw-status' }),
-        h('button', { id: 'raw-revert', onclick: revertRaw }, 'Discard'),
-        h('button', { id: 'raw-apply', class: 'primary', onclick: applyRaw }, 'Apply'),
-      ),
-    );
-  }
-
-  function updateRawStatus() {
-    const status = document.getElementById('raw-status');
-    if (!status) return;
-    const valid = !s.rawError;
-    status.textContent = s.rawError
-      ? s.rawError
-      : s.rawDirty
-        ? 'Valid JSON · unapplied changes'
-        : 'No changes';
-    status.className = valid ? 'ok' : 'bad';
-    document.getElementById('raw-apply').disabled = !s.rawDirty || !valid;
-    document.getElementById('raw-revert').disabled = !s.rawDirty;
-  }
-
-  function applyRaw() {
-    if (s.rawDirty && !s.rawError) post({ type: 'applyRaw', text: s.rawDraft });
-  }
-
-  function revertRaw() {
-    s.rawDraft = s.hostText;
-    s.rawDirty = false;
-    s.conflict = false;
-    s.rawError = s.error;
-    render();
   }
 
   // ---------- Kanban ----------
@@ -276,7 +147,7 @@
         'div',
         { class: 'card-head' },
         h('span', { class: 'id' }, task.id),
-        task.priority && h('span', { class: 'prio prio-' + task.priority }, task.priority),
+        task.priority && h('span', { class: 'prio prio-' + task.priority }, PRIORITY_LABELS[task.priority] || task.priority),
       ),
       h('div', { class: 'card-title' }, task.title),
       task.description && h('div', { class: 'card-desc' }, task.description),
@@ -362,7 +233,7 @@
       'select',
       {},
       h('option', { value: '' }, '—'),
-      ['alta', 'media', 'baja'].map((p) => h('option', { value: p, selected: task && task.priority === p }, p)),
+      ['alta', 'media', 'baja'].map((p) => h('option', { value: p, selected: task && task.priority === p }, PRIORITY_LABELS[p])),
     );
     const labels = h('input', { type: 'text', placeholder: 'comma-separated', value: task && task.labels ? task.labels.join(', ') : '' });
     const due = h('input', { type: 'date', value: task && task.dueDate ? task.dueDate : '' });

@@ -1,8 +1,8 @@
 {
   "name": "kanban-json",
   "displayName": "Kanban JSON",
-  "description": "Kanban board editor for kanban.json files, with a raw text view.",
-  "version": "0.1.1",
+  "description": "Kanban board editor for kanban.json files.",
+  "version": "0.2.0",
   "publisher": "pasta0126",
   "icon": "icon.png",
   "license": "Unlicense",

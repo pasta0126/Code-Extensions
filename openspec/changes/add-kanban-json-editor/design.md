@@ -4,7 +4,7 @@ Extensión de VS Code nueva, sin código previo. El fichero `kanban.json` debe s
 
 ## Goals / Non-Goals
 
-**Goals:** editor Kanban fiable sobre `kanban.json`; modo Raw con validación; dominio testeable sin VS Code.
+**Goals:** editor Kanban fiable sobre `kanban.json`; edición del JSON vía «Abrir como texto»; dominio testeable sin VS Code.
 **Non-goals:** ver `proposal.md`.
 
 ## Decisions
@@ -12,8 +12,8 @@ Extensión de VS Code nueva, sin código previo. El fichero `kanban.json` debe s
 ### Editor personalizado (`CustomTextEditorProvider`)
 Se usa un `CustomTextEditorProvider` con `viewType` `kanbanJson.board` para `kanban.json`. VS Code gestiona el `TextDocument`: deshacer/rehacer, dirty/guardar y cambios externos gratis. Alternativa descartada: webview independiente con lectura/escritura vía `fs`, que obliga a reimplementar todo lo anterior.
 
-### Raw dentro del mismo webview
-La alternancia Kanban/Raw es un modo del webview (textarea con validación), no un editor distinto. Se mantiene un comando "Abrir como texto" (`vscode.openWith` → `default`) para quien prefiera el editor nativo. Alternativa descartada: abrir el editor de texto nativo en paralelo; rompe la petición de alternar en el mismo sitio.
+### Sin vista Raw propia
+Se descartó la vista Raw (textarea con validación) dentro del webview: duplicaba el editor nativo. La edición del JSON se hace con «Abrir como texto» (`vscode.openWith` → `default`).
 
 ### Estructura: núcleo puro + capa de editor
 ```

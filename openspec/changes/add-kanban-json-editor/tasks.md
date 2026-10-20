@@ -15,7 +15,7 @@
 
 - [x] 3.1 `KanbanEditorProvider` y protocolo de mensajes
 - [x] 3.2 Webview Kanban (columnas, tarjetas, formularios, drag & drop)
-- [x] 3.3 Modo Raw con validación y aviso de conflicto
+- [x] 3.3 ~~Modo Raw con validación y aviso de conflicto~~ (retirado: se usa «Abrir como texto»)
 - [x] 3.4 Comandos `createBoard` y `openAsText`
 
 ## 4. Verificación

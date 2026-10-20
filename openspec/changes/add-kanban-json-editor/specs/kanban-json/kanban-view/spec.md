@@ -37,7 +37,7 @@ Los cambios de la vista SHALL aplicarse al `TextDocument` (con soporte de deshac
 
 #### Scenario: JSON inválido
 - **WHEN** el documento contiene JSON inválido o un tablero inválido
-- **THEN** la vista Kanban muestra el error y un acceso directo a la vista Raw, sin modificar el fichero
+- **THEN** la vista Kanban muestra el error y un acceso directo «Abrir como texto», sin modificar el fichero
 
 ### Requirement: Documento vacío
 Cuando el documento esté vacío o solo contenga espacios en blanco, la vista Kanban SHALL ofrecer inicializar el tablero con las columnas básicas (Backlog, En curso, Hecho) en lugar de mostrar un error.
@@ -47,5 +47,5 @@ Cuando el documento esté vacío o solo contenga espacios en blanco, la vista Ka
 - **THEN** el fichero pasa a contener un tablero válido con las columnas `backlog`, `in-progress` y `done`, y la vista las muestra
 
 #### Scenario: Rechazar la inicialización
-- **WHEN** el usuario abre un `kanban.json` en blanco y elige "Editar en Raw"
-- **THEN** el fichero no se modifica y se abre la vista Raw
+- **WHEN** el usuario abre un `kanban.json` en blanco y elige "Abrir como texto"
+- **THEN** el fichero no se modifica y se abre en el editor de texto nativo

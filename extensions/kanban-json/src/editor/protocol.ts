@@ -8,8 +8,6 @@ export type StateMessage = {
   error: string | null;
 };
 
-export type ValidationMessage = { type: 'validation'; text: string; error: string | null };
-
 export type Operation =
   | { kind: 'addColumn'; name: string }
   | { kind: 'renameColumn'; columnId: string; name: string }
@@ -23,7 +21,5 @@ export type Operation =
 export type WebviewMessage =
   | { type: 'ready' }
   | { type: 'op'; op: Operation }
-  | { type: 'validateRaw'; text: string }
-  | { type: 'applyRaw'; text: string }
   | { type: 'initialize' }
   | { type: 'openAsText' };

@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 import { createInitialBoard, parseBoard, serializeBoard } from '../board/json';
 import { Board, BoardError } from '../board/model';
 import * as ops from '../board/operations';
-import { Operation, StateMessage, ValidationMessage, WebviewMessage } from './protocol';
+import { Operation, StateMessage, WebviewMessage } from './protocol';
 
 export const VIEW_TYPE = 'kanbanJson.board';
 
@@ -39,21 +39,6 @@ export class KanbanEditorProvider implements vscode.CustomTextEditorProvider {
               break;
             case 'op':
               await this.runOperation(document, msg.op);
-              break;
-            case 'validateRaw': {
-              let error: string | null = null;
-              try {
-                parseBoard(msg.text);
-              } catch (e) {
-                error = (e as Error).message;
-              }
-              const reply: ValidationMessage = { type: 'validation', text: msg.text, error };
-              void panel.webview.postMessage(reply);
-              break;
-            }
-            case 'applyRaw':
-              parseBoard(msg.text); // refuse to write an invalid board
-              await replaceAll(document, msg.text);
               break;
             case 'initialize': {
               if (document.getText().trim() !== '') throw new Error('The file is not empty');

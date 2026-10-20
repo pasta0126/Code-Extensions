@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.0
+
+- Removed the in-editor Raw tab; use **Open as text** to edit the JSON.
+- Priority labels are shown in English (High, Medium, Low).
+
 ## 0.1.1
 
 - Updated development dependencies (vitest 4.1.12) to fix security advisories in `tinypool` and `@vitest/mocker`. No runtime changes.
