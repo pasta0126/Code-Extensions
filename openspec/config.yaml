@@ -1,11 +1,12 @@
 schema: spec-driven
 
 context: |
-  Proyecto: extensión de VS Code que muestra y mantiene un tablero Kanban a partir de un fichero kanban.json
-  (con vista Raw para editar el JSON).
+  Repositorio con varias extensiones de VS Code, una carpeta por extensión dentro de extensions/ (extensions/kanban-json/, ...).
+  OpenSpec es compartido: los specs de cada extensión van bajo specs/<extension>/<capability>/spec.md.
+  Extensión kanban-json: muestra y mantiene un tablero Kanban a partir de kanban.json (con vista Raw para editar el JSON).
   Stack: TypeScript, esbuild, vitest, webview vanilla (sin framework).
   Metodología: SDD (spec-driven development) con OpenSpec: primero propuesta/specs/diseño/tareas, luego código.
-  Estructura: src/board (núcleo puro, NO importa "vscode"), src/editor (adaptador VS Code), media/ (webview).
+  Estructura: extensions/kanban-json/src/board (núcleo puro, NO importa "vscode"), extensions/kanban-json/src/editor (adaptador VS Code), extensions/kanban-json/media (webview).
   Idioma: specs y documentación en español; código e identificadores en inglés.
   Modelo: Board > Column > Task. Los campos desconocidos de una tarea se conservan.
 

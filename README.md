@@ -1,35 +1,19 @@
-# Kanban JSON
+# Code-Extensions
 
-Extensión de VS Code que muestra y mantiene un tablero Kanban a partir de un `kanban.json`.
+Colección de extensiones de VS Code. Cada una vive en su carpeta dentro de `extensions/` y se desarrolla con SDD ([OpenSpec](https://github.com/Fission-AI/OpenSpec)).
 
-- **Vista Kanban**: columnas y tarjetas; crear/renombrar/borrar columnas, crear/editar/borrar tareas, arrastrar para mover.
-- **Vista Raw**: pestaña "Raw" en el mismo editor para ver y editar el JSON, con validación antes de aplicar.
-- El documento es la fuente de verdad (deshacer/rehacer, guardado y cambios externos funcionan).
-- Los campos que la extensión no conoce (`startedAt`, `completedAt`, `reviewer`, ...) se conservan.
-
-Formato de ejemplo en [`examples/kanban.json`](examples/kanban.json).
+| Extensión | Descripción |
+|---|---|
+| [`kanban-json`](extensions/kanban-json/) | Tablero Kanban alimentado por un `kanban.json`, con vista Raw para editar el JSON. |
 
 ## Desarrollo
 
-```bash
-npm install
-npm test            # tests del núcleo (src/board)
-npm run typecheck
-npm run build
-```
+Cada extensión es autocontenida: entra en su carpeta e instala/ejecuta ahí (`cd extensions/kanban-json && npm install && npm test`).
+Para probar una extensión, abre la raíz en VS Code y pulsa **F5** (elige su configuración de lanzamiento).
 
-Pulsa **F5** en VS Code para abrir un Extension Development Host con `examples/` y abre `kanban.json`.
+Los specs y cambios están en [`openspec/`](openspec/), agrupados por extensión.
+Las instrucciones para agentes están en [`AGENTS.md`](AGENTS.md).
 
-## Desarrollo dirigido por especificaciones (OpenSpec)
+## Licencia
 
-Los cambios se especifican en `openspec/changes/` antes de implementarse. Cambio inicial:
-[`add-kanban-json-editor`](openspec/changes/add-kanban-json-editor/). Flujo con Claude Code: `/opsx:propose`, `/opsx:apply`, `/opsx:archive`.
-
-## Estructura
-
-```
-src/board/     núcleo puro (modelo, validación, JSON, operaciones) — sin imports de vscode
-src/editor/    CustomTextEditorProvider y protocolo de mensajes
-media/         webview (JS/CSS vanilla)
-openspec/      specs y cambios
-```
+[Unlicense](LICENSE)

@@ -1,9 +1,9 @@
 ## 1. Scaffolding
 
 - [x] 1.1 package.json, tsconfig, esbuild, vitest, launch/tasks de VS Code
-- [x] 1.2 Estructura `src/board`, `src/editor`, `media/` y `examples/kanban.json`
+- [x] 1.2 Estructura `extensions/kanban-json/src/board`, `extensions/kanban-json/src/editor`, `media/` y `examples/kanban.json` dentro de `extensions/kanban-json/`
 
-## 2. Núcleo del tablero (`src/board`)
+## 2. Núcleo del tablero (`extensions/kanban-json/src/board`)
 
 - [x] 2.1 Tipos del modelo, `Priority` y `BoardError`
 - [x] 2.2 Validación de invariantes (ids únicos, prioridades)
@@ -11,7 +11,7 @@
 - [x] 2.4 Operaciones de columnas (añadir, renombrar, eliminar) y generación de ids
 - [x] 2.5 Operaciones de tareas (añadir, actualizar, eliminar, mover)
 
-## 3. Editor de VS Code (`src/editor`)
+## 3. Editor de VS Code (`extensions/kanban-json/src/editor`)
 
 - [x] 3.1 `KanbanEditorProvider` y protocolo de mensajes
 - [x] 3.2 Webview Kanban (columnas, tarjetas, formularios, drag & drop)

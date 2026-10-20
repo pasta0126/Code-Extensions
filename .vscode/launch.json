@@ -2,12 +2,15 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Run Extension",
+      "name": "Run kanban-json",
       "type": "extensionHost",
       "request": "launch",
-      "args": ["--extensionDevelopmentPath=${workspaceFolder}", "${workspaceFolder}/examples"],
-      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
-      "preLaunchTask": "npm: build"
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}/extensions/kanban-json",
+        "${workspaceFolder}/extensions/kanban-json/examples"
+      ],
+      "outFiles": ["${workspaceFolder}/extensions/kanban-json/dist/**/*.js"],
+      "preLaunchTask": "kanban-json: build"
     }
   ]
 }

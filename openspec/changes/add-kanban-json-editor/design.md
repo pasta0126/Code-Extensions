@@ -17,12 +17,12 @@ La alternancia Kanban/Raw es un modo del webview (textarea con validación), no 
 
 ### Estructura: núcleo puro + capa de editor
 ```
-src/
-  board/       Núcleo puro, sin imports de vscode (testeable con vitest):
-               model.ts (tipos), validate.ts (reglas), json.ts (parse/serialize), operations.ts (Board -> Board)
-  editor/      Adaptador de VS Code: KanbanEditorProvider, protocolo de mensajes, HTML del webview
-  extension.ts Activación y comandos
-media/         JS/CSS del webview (vanilla, sin framework)
+extensions/kanban-json/
+  src/board/   Núcleo puro, sin imports de vscode (testeable con vitest):
+               model.ts (tipos), json.ts (parse/serialize y validación), operations.ts (Board -> Board)
+  src/editor/  Adaptador de VS Code: KanbanEditorProvider, protocolo de mensajes, HTML del webview
+  src/extension.ts Activación y comandos
+  media/       JS/CSS del webview (vanilla, sin framework)
 ```
 Solo `editor/` y `extension.ts` importan `vscode`.
 

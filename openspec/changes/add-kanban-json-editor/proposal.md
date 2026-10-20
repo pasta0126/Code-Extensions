@@ -4,7 +4,7 @@ Gestionar tareas en un tablero Kanban sin salir de VS Code, con un único ficher
 
 ## What Changes
 
-- Nueva extensión de VS Code (`kanban-json`) que abre `kanban.json` como editor personalizado.
+- Nueva extensión de VS Code (`kanban-json`, en la carpeta `extensions/kanban-json/` del repositorio) que abre `kanban.json` como editor personalizado.
 - Vista **Kanban**: columnas y tarjetas, con crear/renombrar/borrar columnas, crear/editar/borrar tareas y mover tareas (drag & drop) entre columnas y dentro de una columna.
 - Vista **Raw**: conmutable desde la vista Kanban, muestra y permite editar el JSON con validación antes de aplicar.
 - El `TextDocument` es la fuente de verdad: deshacer/rehacer, guardado y cambios externos (git, otro editor) se reflejan en ambas vistas.
