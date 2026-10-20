@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.1
+
+- Updated development dependencies (vitest 4.1.12) to fix security advisories in `tinypool` and `@vitest/mocker`. No runtime changes.
+
 ## 0.1.0
 
 - All user-facing text (UI, messages, command titles, description, README) is now in English.
