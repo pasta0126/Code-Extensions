@@ -37,7 +37,7 @@ describe('board-model: formato', () => {
 
   it('rechaza ids de tarea duplicados entre columnas', () => {
     const bad = sample.replace('"TASK-105"', '"TASK-101"');
-    expect(() => parseBoard(bad)).toThrow(/duplicado: TASK-101/);
+    expect(() => parseBoard(bad)).toThrow(/[Dd]uplicate task id: TASK-101/);
   });
 
   it('rechaza JSON inválido con BoardError', () => {

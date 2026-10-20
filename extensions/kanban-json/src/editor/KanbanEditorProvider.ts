@@ -56,7 +56,7 @@ export class KanbanEditorProvider implements vscode.CustomTextEditorProvider {
               await replaceAll(document, msg.text);
               break;
             case 'initialize': {
-              if (document.getText().trim() !== '') throw new Error('El fichero no está vacío');
+              if (document.getText().trim() !== '') throw new Error('The file is not empty');
               const folder = path.basename(path.dirname(document.uri.fsPath));
               await replaceAll(document, serializeBoard(createInitialBoard(folder)));
               break;
@@ -80,12 +80,12 @@ export class KanbanEditorProvider implements vscode.CustomTextEditorProvider {
       const column = board.columns.find((c) => c.id === op.columnId);
       if (column && column.tasks.length > 0) {
         const ok = await vscode.window.showWarningMessage(
-          `La columna "${column.name}" tiene ${column.tasks.length} tarea(s). ¿Eliminarla?`,
+          `Column "${column.name}" has ${column.tasks.length} task(s). Delete it?`,
           { modal: true },
-          'Eliminar',
+          'Delete',
         );
-        if (ok !== 'Eliminar') {
-          void vscode.window.showInformationMessage('Eliminación cancelada.');
+        if (ok !== 'Delete') {
+          void vscode.window.showInformationMessage('Deletion cancelled.');
           return;
         }
       }
@@ -135,7 +135,7 @@ function apply(board: Board, op: Operation): Board {
     case 'moveTask':
       return ops.moveTask(board, op.taskId, op.toColumnId, op.toIndex);
     default:
-      throw new BoardError('Operación desconocida');
+      throw new BoardError('Unknown operation');
   }
 }
 
@@ -143,5 +143,5 @@ async function replaceAll(document: vscode.TextDocument, text: string): Promise<
   if (document.getText() === text) return;
   const edit = new vscode.WorkspaceEdit();
   edit.replace(document.uri, new vscode.Range(0, 0, document.lineCount, 0), text);
-  if (!(await vscode.workspace.applyEdit(edit))) throw new Error('No se pudo modificar el documento');
+  if (!(await vscode.workspace.applyEdit(edit))) throw new Error('Could not modify the document');
 }

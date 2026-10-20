@@ -8,7 +8,7 @@ function slugify(name: string): string {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
-  return slug || 'columna';
+  return slug || 'column';
 }
 
 export function nextColumnId(board: Board, name: string): string {
@@ -36,18 +36,18 @@ function findTask(board: Board, taskId: string): { column: Column; index: number
     const index = column.tasks.findIndex((t) => t.id === taskId);
     if (index >= 0) return { column, index };
   }
-  throw new BoardError(`No existe la tarea ${taskId}`);
+  throw new BoardError(`Task ${taskId} does not exist`);
 }
 
 function requireColumn(board: Board, columnId: string): Column {
   const column = board.columns.find((c) => c.id === columnId);
-  if (!column) throw new BoardError(`No existe la columna ${columnId}`);
+  if (!column) throw new BoardError(`Column ${columnId} does not exist`);
   return column;
 }
 
 function requireText(value: string, what: string): string {
   const v = value.trim();
-  if (!v) throw new BoardError(`${what} no puede estar vacío`);
+  if (!v) throw new BoardError(`${what} cannot be empty`);
   return v;
 }
 
@@ -58,14 +58,14 @@ function clone(board: Board): Board {
 
 export function addColumn(board: Board, name: string): Board {
   const next = clone(board);
-  const clean = requireText(name, 'El nombre de la columna');
+  const clean = requireText(name, 'The column name');
   next.columns.push({ id: nextColumnId(board, clean), name: clean, tasks: [] });
   return next;
 }
 
 export function renameColumn(board: Board, columnId: string, name: string): Board {
   const next = clone(board);
-  requireColumn(next, columnId).name = requireText(name, 'El nombre de la columna');
+  requireColumn(next, columnId).name = requireText(name, 'The column name');
   return next;
 }
 
@@ -84,14 +84,14 @@ export function addTask(
 ): Board {
   const next = clone(board);
   const column = requireColumn(next, columnId);
-  const task: Task = { id: nextTaskId(board), title: requireText(input.title, 'El título'), extras: {} };
+  const task: Task = { id: nextTaskId(board), title: requireText(input.title, 'The title'), extras: {} };
   column.tasks.push(applyPatch(task, { ...input, title: undefined }));
   task.createdAt = today;
   return next;
 }
 
 function applyPatch(task: Task, patch: TaskPatch): Task {
-  if (patch.title !== undefined) task.title = requireText(patch.title, 'El título');
+  if (patch.title !== undefined) task.title = requireText(patch.title, 'The title');
   const fields = ['description', 'assignee', 'priority', 'labels', 'dueDate'] as const;
   for (const key of fields) {
     const value = patch[key];

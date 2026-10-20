@@ -17,21 +17,21 @@ function isRecord(v: unknown): v is Record<string, unknown> {
 
 function requireString(v: unknown, where: string): string {
   if (typeof v !== 'string' || v.trim() === '') {
-    throw new BoardError(`${where} debe ser un texto no vacío`);
+    throw new BoardError(`${where} must be a non-empty string`);
   }
   return v;
 }
 
 function optionalString(v: unknown, where: string): string | undefined {
   if (v === undefined) return undefined;
-  if (typeof v !== 'string') throw new BoardError(`${where} debe ser un texto`);
+  if (typeof v !== 'string') throw new BoardError(`${where} must be a string`);
   return v;
 }
 
 function parseTask(raw: unknown, where: string): Task {
-  if (!isRecord(raw)) throw new BoardError(`${where} debe ser un objeto`);
+  if (!isRecord(raw)) throw new BoardError(`${where} must be an object`);
   const id = requireString(raw.id, `${where}.id`);
-  const at = `La tarea ${id}`;
+  const at = `Task ${id}`;
   const task: Task = { id, title: requireString(raw.title, `${at}: title`), extras: {} };
 
   const description = optionalString(raw.description, `${at}: description`);
@@ -44,20 +44,20 @@ function parseTask(raw: unknown, where: string): Task {
   if (raw.priority !== undefined) {
     if (!PRIORITIES.includes(raw.priority as Priority)) {
       throw new BoardError(
-        `${at} tiene priority "${String(raw.priority)}"; valores válidos: ${PRIORITIES.join(', ')}`,
+        `${at} has priority "${String(raw.priority)}"; valid values: ${PRIORITIES.join(', ')}`,
       );
     }
     task.priority = raw.priority as Priority;
   }
   if (raw.labels !== undefined) {
     if (!Array.isArray(raw.labels) || raw.labels.some((l) => typeof l !== 'string')) {
-      throw new BoardError(`${at}: labels debe ser una lista de textos`);
+      throw new BoardError(`${at}: labels must be a list of strings`);
     }
     task.labels = raw.labels as string[];
   }
   if (raw.dueDate !== undefined) {
     if (raw.dueDate !== null && typeof raw.dueDate !== 'string') {
-      throw new BoardError(`${at}: dueDate debe ser un texto o null`);
+      throw new BoardError(`${at}: dueDate must be a string or null`);
     }
     task.dueDate = raw.dueDate as string | null;
   }
@@ -73,10 +73,10 @@ export function assertValid(board: Board): void {
   const columnIds = new Set<string>();
   const taskIds = new Set<string>();
   for (const column of board.columns) {
-    if (columnIds.has(column.id)) throw new BoardError(`Id de columna duplicado: ${column.id}`);
+    if (columnIds.has(column.id)) throw new BoardError(`Duplicate column id: ${column.id}`);
     columnIds.add(column.id);
     for (const task of column.tasks) {
-      if (taskIds.has(task.id)) throw new BoardError(`Id de tarea duplicado: ${task.id}`);
+      if (taskIds.has(task.id)) throw new BoardError(`Duplicate task id: ${task.id}`);
       taskIds.add(task.id);
     }
   }
@@ -87,16 +87,16 @@ export function parseBoard(text: string): Board {
   try {
     raw = JSON.parse(text);
   } catch (e) {
-    throw new BoardError(`JSON inválido: ${(e as Error).message}`);
+    throw new BoardError(`Invalid JSON: ${(e as Error).message}`);
   }
-  if (!isRecord(raw)) throw new BoardError('La raíz debe ser un objeto');
-  if (!Array.isArray(raw.columns)) throw new BoardError('"columns" debe ser una lista');
+  if (!isRecord(raw)) throw new BoardError('The root must be an object');
+  if (!Array.isArray(raw.columns)) throw new BoardError('"columns" must be a list');
 
   const columns: Column[] = raw.columns.map((c, i) => {
-    if (!isRecord(c)) throw new BoardError(`columns[${i}] debe ser un objeto`);
+    if (!isRecord(c)) throw new BoardError(`columns[${i}] must be an object`);
     const id = requireString(c.id, `columns[${i}].id`);
-    const name = requireString(c.name, `La columna ${id}: name`);
-    if (!Array.isArray(c.tasks)) throw new BoardError(`La columna ${id}: "tasks" debe ser una lista`);
+    const name = requireString(c.name, `Column ${id}: name`);
+    if (!Array.isArray(c.tasks)) throw new BoardError(`Column ${id}: "tasks" must be a list`);
     return { id, name, tasks: c.tasks.map((t, j) => parseTask(t, `columns[${i}].tasks[${j}]`)) };
   });
 
@@ -119,7 +119,7 @@ export function createInitialBoard(name: string): Board {
   const column = (id: string, title: string) => ({ id, name: title, tasks: [] });
   return {
     board: name.trim() || 'Kanban',
-    columns: [column('backlog', 'Backlog'), column('in-progress', 'En curso'), column('done', 'Hecho')],
+    columns: [column('backlog', 'Backlog'), column('in-progress', 'In Progress'), column('done', 'Done')],
   };
 }
 

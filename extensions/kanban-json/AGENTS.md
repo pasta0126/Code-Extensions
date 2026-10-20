@@ -38,6 +38,6 @@ examples/        kanban.json de ejemplo (también fixture de los tests)
 
 ## Convenciones
 
-- Mensajes de error visibles al usuario en español.
+- Todo texto visible al usuario (UI, mensajes, descripción, README, CHANGELOG) en inglés.
 - TypeScript estricto (`noUncheckedIndexedAccess` activo). Sin dependencias de runtime nuevas salvo necesidad clara; el bundle va con esbuild.
 - Todo cambio en `src/board` debe llevar tests en `test/`. Ejecuta `npm test` y `npm run typecheck` antes de dar algo por terminado.

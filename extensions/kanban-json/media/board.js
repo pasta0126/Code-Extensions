@@ -97,7 +97,7 @@
       { class: 'toolbar' },
       h('div', { class: 'tabs' }, tab('kanban', 'Kanban'), tab('raw', 'Raw')),
       h('span', { class: 'title' }, s.board ? s.board.board : ''),
-      h('button', { class: 'link', onclick: () => post({ type: 'openAsText' }) }, 'Abrir como texto'),
+      h('button', { class: 'link', onclick: () => post({ type: 'openAsText' }) }, 'Open as text'),
     );
   }
 
@@ -107,11 +107,11 @@
     return h(
       'div',
       { class: 'empty-doc' },
-      h('p', {}, 'Este kanban.json está vacío.'),
-      h('p', {}, '¿Quieres inicializarlo con las columnas básicas (Backlog, En curso, Hecho)?'),
-      h('button', { onclick: () => post({ type: 'initialize' }) }, 'Inicializar tablero'),
+      h('p', {}, 'This kanban.json is empty.'),
+      h('p', {}, 'Do you want to initialize it with the basic columns (Backlog, In Progress, Done)?'),
+      h('button', { onclick: () => post({ type: 'initialize' }) }, 'Initialize board'),
       ' ',
-      h('button', { class: 'link', onclick: () => setMode('raw') }, 'Editar en Raw'),
+      h('button', { class: 'link', onclick: () => setMode('raw') }, 'Edit in Raw'),
     );
   }
 
@@ -122,10 +122,10 @@
         h(
           'div',
           { class: 'banner error' },
-          h('strong', {}, 'No se puede mostrar el tablero: '),
+          h('strong', {}, 'Cannot display the board: '),
           s.error,
           ' ',
-          h('button', { onclick: () => setMode('raw') }, 'Corregir en Raw'),
+          h('button', { onclick: () => setMode('raw') }, 'Fix in Raw'),
         ),
       );
     }
@@ -134,7 +134,7 @@
         h(
           'div',
           { class: 'banner warn' },
-          'El documento ha cambiado mientras editabas. ',
+          'The document changed while you were editing. ',
           h(
             'button',
             {
@@ -146,7 +146,7 @@
                 render();
               },
             },
-            'Recargar desde el documento',
+            'Reload from document',
           ),
         ),
       );
@@ -184,8 +184,8 @@
         'div',
         { class: 'raw-bar' },
         h('span', { id: 'raw-status' }),
-        h('button', { id: 'raw-revert', onclick: revertRaw }, 'Descartar'),
-        h('button', { id: 'raw-apply', class: 'primary', onclick: applyRaw }, 'Aplicar'),
+        h('button', { id: 'raw-revert', onclick: revertRaw }, 'Discard'),
+        h('button', { id: 'raw-apply', class: 'primary', onclick: applyRaw }, 'Apply'),
       ),
     );
   }
@@ -197,8 +197,8 @@
     status.textContent = s.rawError
       ? s.rawError
       : s.rawDirty
-        ? 'JSON válido · cambios sin aplicar'
-        : 'Sin cambios';
+        ? 'Valid JSON · unapplied changes'
+        : 'No changes';
     status.className = valid ? 'ok' : 'bad';
     document.getElementById('raw-apply').disabled = !s.rawDirty || !valid;
     document.getElementById('raw-revert').disabled = !s.rawDirty;
@@ -218,7 +218,7 @@
 
   // ---------- Kanban ----------
   function kanbanView() {
-    if (!s.board) return h('div', { class: 'empty' }, 'Sin tablero válido.');
+    if (!s.board) return h('div', { class: 'empty' }, 'No valid board.');
     return h(
       'div',
       { class: 'columns' },
@@ -226,7 +226,7 @@
       h(
         'div',
         { class: 'column add-column' },
-        h('button', { class: 'primary', onclick: () => askText('Nueva columna', '', (name) => op({ kind: 'addColumn', name })) }, '+ Añadir columna'),
+        h('button', { class: 'primary', onclick: () => askText('New column', '', (name) => op({ kind: 'addColumn', name })) }, '+ Add column'),
       ),
     );
   }
@@ -257,14 +257,14 @@
         {},
         h(
           'h2',
-          { title: 'Doble clic para renombrar', ondblclick: () => askText('Renombrar columna', column.name, (name) => op({ kind: 'renameColumn', columnId: column.id, name })) },
+          { title: 'Double-click to rename', ondblclick: () => askText('Rename column', column.name, (name) => op({ kind: 'renameColumn', columnId: column.id, name })) },
           column.name,
         ),
         h('span', { class: 'count' }, column.tasks.length),
-        h('button', { class: 'icon', title: 'Eliminar columna', onclick: () => op({ kind: 'deleteColumn', columnId: column.id }) }, '×'),
+        h('button', { class: 'icon', title: 'Delete column', onclick: () => op({ kind: 'deleteColumn', columnId: column.id }) }, '×'),
       ),
       list,
-      h('button', { class: 'add-task', onclick: () => taskDialog(null, column.id) }, '+ Añadir tarea'),
+      h('button', { class: 'add-task', onclick: () => taskDialog(null, column.id) }, '+ Add task'),
     );
   }
 
@@ -340,7 +340,7 @@
         { method: 'dialog' },
         h('h3', {}, title),
         input,
-        h('div', { class: 'dialog-bar' }, h('button', { value: 'cancel', formnovalidate: true }, 'Cancelar'), h('button', { class: 'primary', value: 'ok' }, 'Aceptar')),
+        h('div', { class: 'dialog-bar' }, h('button', { value: 'cancel', formnovalidate: true }, 'Cancel'), h('button', { class: 'primary', value: 'ok' }, 'OK')),
       ),
     );
     dlg.addEventListener('close', () => {
@@ -364,7 +364,7 @@
       h('option', { value: '' }, '—'),
       ['alta', 'media', 'baja'].map((p) => h('option', { value: p, selected: task && task.priority === p }, p)),
     );
-    const labels = h('input', { type: 'text', placeholder: 'separadas por coma', value: task && task.labels ? task.labels.join(', ') : '' });
+    const labels = h('input', { type: 'text', placeholder: 'comma-separated', value: task && task.labels ? task.labels.join(', ') : '' });
     const due = h('input', { type: 'date', value: task && task.dueDate ? task.dueDate : '' });
 
     const dlg = h(
@@ -373,20 +373,20 @@
       h(
         'form',
         { method: 'dialog' },
-        h('h3', {}, task ? 'Editar ' + task.id : 'Nueva tarea'),
-        f('Título', title),
-        f('Descripción', description),
-        f('Responsable', assignee),
-        f('Prioridad', priority),
-        f('Etiquetas', labels),
-        f('Fecha límite', due),
+        h('h3', {}, task ? 'Edit ' + task.id : 'New task'),
+        f('Title', title),
+        f('Description', description),
+        f('Assignee', assignee),
+        f('Priority', priority),
+        f('Labels', labels),
+        f('Due date', due),
         h(
           'div',
           { class: 'dialog-bar' },
-          task && h('button', { class: 'danger', value: 'delete', formnovalidate: true }, 'Eliminar'),
+          task && h('button', { class: 'danger', value: 'delete', formnovalidate: true }, 'Delete'),
           h('span', { class: 'spacer' }),
-          h('button', { value: 'cancel', formnovalidate: true }, 'Cancelar'),
-          h('button', { class: 'primary', value: 'ok' }, 'Guardar'),
+          h('button', { value: 'cancel', formnovalidate: true }, 'Cancel'),
+          h('button', { class: 'primary', value: 'ok' }, 'Save'),
         ),
       ),
     );

@@ -1,9 +1,13 @@
 # Changelog
 
+## 0.1.0
+
+- All user-facing text (UI, messages, command titles, description, README) is now in English.
+
 ## 0.0.2
 
-- Un `kanban.json` vacío ya no da error: la vista Kanban ofrece inicializar el tablero con las columnas Backlog, En curso y Hecho.
+- An empty `kanban.json` no longer shows an error: the Kanban view offers to initialize the board with the Backlog, In Progress and Done columns.
 
 ## 0.0.1
 
-- Primera versión: editor Kanban para `kanban.json` con vista Raw conmutable.
+- First release: Kanban editor for `kanban.json` with a switchable Raw view.

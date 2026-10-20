@@ -1,39 +1,40 @@
 # Kanban JSON
 
-Gestiona un tablero Kanban dentro de VS Code a partir de un único fichero `kanban.json`, versionable en git.
+Manage a Kanban board inside VS Code from a single `kanban.json` file that you can version in git.
 
-## Características
+## Features
 
-- **Vista Kanban**: columnas y tarjetas. Crea, renombra y elimina columnas; crea, edita y elimina tareas; arrastra tarjetas entre columnas o dentro de una columna.
-- **Vista Raw**: pestaña "Raw" en el mismo editor para ver y editar el JSON, con validación en vivo. Solo se puede aplicar si es válido.
-- **Siempre sincronizado**: el fichero es la fuente de verdad. Deshacer/rehacer, guardado y cambios externos (git, otro editor) se reflejan en ambas vistas.
-- **No pierde datos**: los campos que la extensión no conoce (`startedAt`, `completedAt`, `reviewer`, ...) se conservan al guardar.
+- **Kanban view**: columns and cards. Create, rename and delete columns; create, edit and delete tasks; drag cards between columns or within a column.
+- **Raw view**: a "Raw" tab in the same editor to view and edit the JSON, with live validation. It can only be applied when valid.
+- **Always in sync**: the file is the source of truth. Undo/redo, saving and external changes (git, another editor) are reflected in both views.
+- **No data loss**: fields the extension does not know about (`startedAt`, `completedAt`, `reviewer`, ...) are preserved on save.
+- **Empty file friendly**: opening a blank `kanban.json` offers to initialize it with the Backlog, In Progress and Done columns.
 
-## Uso
+## Usage
 
-1. Abre cualquier fichero llamado `kanban.json`: se muestra como tablero.
-2. O ejecuta **Kanban: Crear kanban.json de ejemplo** desde la paleta de comandos para empezar un tablero nuevo en tu carpeta.
-3. Pulsa **Raw** para editar el JSON o **Abrir como texto** para usar el editor de texto nativo.
+1. Open any file named `kanban.json`: it is displayed as a board.
+2. Or run **Kanban: Create sample kanban.json** from the command palette to start a new board in your folder.
+3. Click **Raw** to edit the JSON, or **Open as text** to use the native text editor.
 
-Comandos: `Kanban: Crear kanban.json de ejemplo`, `Kanban: Abrir como texto`, `Kanban: Abrir como tablero`.
+Commands: `Kanban: Create sample kanban.json`, `Kanban: Open as Text`, `Kanban: Open as Board`.
 
-## Formato
+## Format
 
 ```json
 {
-  "board": "Mi tablero",
+  "board": "My board",
   "columns": [
     {
       "id": "todo",
-      "name": "Por hacer",
+      "name": "To do",
       "tasks": [
         {
           "id": "TASK-1",
-          "title": "Mi primera tarea",
-          "description": "Opcional",
-          "assignee": "Ana",
+          "title": "My first task",
+          "description": "Optional",
+          "assignee": "Alex",
           "priority": "alta",
-          "labels": ["ejemplo"],
+          "labels": ["example"],
           "createdAt": "2026-10-20",
           "dueDate": null
         }
@@ -43,8 +44,8 @@ Comandos: `Kanban: Crear kanban.json de ejemplo`, `Kanban: Abrir como texto`, `K
 }
 ```
 
-`priority` admite `alta`, `media` o `baja`. Los ids de columna y de tarea deben ser únicos.
+`priority` accepts `alta` (high), `media` (medium) or `baja` (low). Column ids and task ids must be unique.
 
-## Licencia
+## License
 
-Dominio público ([Unlicense](LICENSE)).
+Public domain ([Unlicense](LICENSE)).

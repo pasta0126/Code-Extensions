@@ -1,8 +1,8 @@
 {
   "name": "kanban-json",
   "displayName": "Kanban JSON",
-  "description": "Editor de tableros Kanban para ficheros kanban.json, con vista de texto.",
-  "version": "0.0.2",
+  "description": "Kanban board editor for kanban.json files, with a raw text view.",
+  "version": "0.1.0",
   "publisher": "pasta0126",
   "icon": "icon.png",
   "license": "Unlicense",
@@ -35,15 +35,15 @@
     "commands": [
       {
         "command": "kanbanJson.createBoard",
-        "title": "Kanban: Crear kanban.json de ejemplo"
+        "title": "Kanban: Create sample kanban.json"
       },
       {
         "command": "kanbanJson.openAsText",
-        "title": "Kanban: Abrir como texto"
+        "title": "Kanban: Open as Text"
       },
       {
         "command": "kanbanJson.openAsBoard",
-        "title": "Kanban: Abrir como tablero"
+        "title": "Kanban: Open as Board"
       }
     ]
   },

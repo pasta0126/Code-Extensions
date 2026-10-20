@@ -2,11 +2,11 @@ import * as vscode from 'vscode';
 import { KanbanEditorProvider, VIEW_TYPE } from './editor/KanbanEditorProvider';
 
 const SAMPLE = {
-  board: 'Mi tablero',
+  board: 'My board',
   columns: [
-    { id: 'todo', name: 'Por hacer', tasks: [] },
-    { id: 'in-progress', name: 'En progreso', tasks: [] },
-    { id: 'done', name: 'Hecho', tasks: [] },
+    { id: 'todo', name: 'To do', tasks: [] },
+    { id: 'in-progress', name: 'In progress', tasks: [] },
+    { id: 'done', name: 'Done', tasks: [] },
   ],
 };
 
@@ -19,7 +19,7 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand('kanbanJson.createBoard', async () => {
       const folder = vscode.workspace.workspaceFolders?.[0];
       if (!folder) {
-        void vscode.window.showErrorMessage('Abre una carpeta para crear kanban.json.');
+        void vscode.window.showErrorMessage('Open a folder to create kanban.json.');
         return;
       }
       const uri = vscode.Uri.joinPath(folder.uri, 'kanban.json');

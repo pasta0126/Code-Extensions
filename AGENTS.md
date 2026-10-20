@@ -31,7 +31,7 @@ Desarrollo dirigido por especificaciones. Antes de escribir código para una fun
 
 ## Convenciones del repo
 
-- Specs y documentación en español; código, identificadores y nombres de ficheros en inglés.
+- Specs y documentación interna en español; textos de cara al usuario (UI, README y CHANGELOG de cada extensión) en inglés; código, identificadores y nombres de ficheros en inglés.
 - Los comandos npm se ejecutan dentro de la carpeta de la extensión (`cd extensions/kanban-json && npm test`); no hay `package.json` en la raíz.
 - Ficheros locales (como `sessions.txt`) y artefactos de build están en `.gitignore`.
 - No hagas commit salvo que se pida explícitamente.
