@@ -1,10 +1,14 @@
-import { Board, TaskPatch } from '../board/model';
+import { Board, Priority, TaskPatch } from '../board/model';
 
 /** Host -> webview. */
 export type StateMessage = {
   type: 'state';
   text: string;
   board: Board | null;
+  /** Effective priorities (board block or defaults). */
+  priorities: Priority[];
+  /** Legacy id -> id aliases; empty when the board defines its own priorities. */
+  priorityAliases: Record<string, string>;
   error: string | null;
 };
 

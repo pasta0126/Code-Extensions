@@ -2,7 +2,7 @@ import { randomBytes } from 'node:crypto';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
 import { createInitialBoard, parseBoard, serializeBoard } from '../board/json';
-import { Board, BoardError } from '../board/model';
+import { Board, BoardError, effectivePriorities, LEGACY_PRIORITY_IDS, unknownPriorities } from '../board/model';
 import * as ops from '../board/operations';
 import { Operation, StateMessage, WebviewMessage } from './protocol';
 
@@ -16,13 +16,29 @@ export class KanbanEditorProvider implements vscode.CustomTextEditorProvider {
     panel.webview.options = { enableScripts: true, localResourceRoots: [media] };
     panel.webview.html = this.html(panel.webview, media);
 
+    let warnedUnknown = '';
     const sendState = () => {
       const text = document.getText();
       let msg: StateMessage;
       try {
-        msg = { type: 'state', text, board: parseBoard(text), error: null };
+        const board = parseBoard(text);
+        msg = {
+          type: 'state',
+          text,
+          board,
+          error: null,
+          priorities: effectivePriorities(board),
+          priorityAliases: board.priorities ? {} : { ...LEGACY_PRIORITY_IDS },
+        };
+        const unknown = unknownPriorities(board).join(', ');
+        if (unknown !== warnedUnknown) {
+          warnedUnknown = unknown;
+          if (unknown) {
+            void vscode.window.showWarningMessage(`Kanban: tasks use undefined priorities: ${unknown}.`);
+          }
+        }
       } catch (e) {
-        msg = { type: 'state', text, board: null, error: (e as Error).message };
+        msg = { type: 'state', text, board: null, error: (e as Error).message, priorities: [], priorityAliases: {} };
       }
       void panel.webview.postMessage(msg);
     };

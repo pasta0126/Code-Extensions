@@ -69,9 +69,11 @@ input:focus, textarea:focus, select:focus { outline: 1px solid var(--vscode-focu
 .labels { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
 .label { padding: 0 6px; border-radius: 8px; font-size: .8em; background: var(--vscode-badge-background); color: var(--vscode-badge-foreground); }
 .prio { padding: 0 6px; border-radius: 3px; font-size: .8em; text-transform: uppercase; }
-.prio-alta { background: var(--vscode-inputValidation-errorBackground); border: 1px solid var(--vscode-inputValidation-errorBorder); }
-.prio-media { background: var(--vscode-inputValidation-warningBackground); border: 1px solid var(--vscode-inputValidation-warningBorder); }
-.prio-baja { background: var(--vscode-inputValidation-infoBackground); border: 1px solid var(--vscode-inputValidation-infoBorder); }
+.prio-high { background: var(--vscode-inputValidation-errorBackground); border: 1px solid var(--vscode-inputValidation-errorBorder); }
+.prio-medium { background: var(--vscode-inputValidation-warningBackground); border: 1px solid var(--vscode-inputValidation-warningBorder); }
+.prio-low { background: var(--vscode-inputValidation-infoBackground); border: 1px solid var(--vscode-inputValidation-infoBorder); }
+.prio-unknown { background: var(--vscode-badge-background); color: var(--vscode-badge-foreground); border: 1px solid transparent; text-transform: none; }
+.prio-colored { background: color-mix(in srgb, var(--prio-color) 25%, transparent); border: 1px solid var(--prio-color); }
 .due.overdue { color: var(--vscode-errorForeground); font-weight: 600; }
 .drop-marker { height: 3px; border-radius: 2px; background: var(--vscode-focusBorder); flex: none; }
 .empty { padding: 24px; opacity: .7; }

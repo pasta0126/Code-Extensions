@@ -1,4 +1,4 @@
-import { Board, BoardError, Column, PRIORITIES, Priority, Task } from './model';
+import { Board, BoardError, Column, DEFAULT_PRIORITIES, Priority, Task } from './model';
 
 const KNOWN_TASK_KEYS = [
   'id',
@@ -42,12 +42,8 @@ function parseTask(raw: unknown, where: string): Task {
   if (createdAt !== undefined) task.createdAt = createdAt;
 
   if (raw.priority !== undefined) {
-    if (!PRIORITIES.includes(raw.priority as Priority)) {
-      throw new BoardError(
-        `${at} has priority "${String(raw.priority)}"; valid values: ${PRIORITIES.join(', ')}`,
-      );
-    }
-    task.priority = raw.priority as Priority;
+    if (typeof raw.priority !== 'string') throw new BoardError(`${at}: priority must be a string`);
+    task.priority = raw.priority;
   }
   if (raw.labels !== undefined) {
     if (!Array.isArray(raw.labels) || raw.labels.some((l) => typeof l !== 'string')) {
@@ -82,6 +78,21 @@ export function assertValid(board: Board): void {
   }
 }
 
+function parsePriorities(raw: unknown): Priority[] {
+  if (!Array.isArray(raw)) throw new BoardError('"priorities" must be a list');
+  const seen = new Set<string>();
+  return raw.map((p, i) => {
+    if (!isRecord(p)) throw new BoardError(`priorities[${i}] must be an object`);
+    const id = requireString(p.id, `priorities[${i}].id`);
+    if (seen.has(id)) throw new BoardError(`Duplicate priority id: ${id}`);
+    seen.add(id);
+    const priority: Priority = { id, name: requireString(p.name, `priorities[${i}].name`) };
+    const color = optionalString(p.color, `priorities[${i}].color`);
+    if (color !== undefined) priority.color = color;
+    return priority;
+  });
+}
+
 export function parseBoard(text: string): Board {
   let raw: unknown;
   try {
@@ -101,6 +112,7 @@ export function parseBoard(text: string): Board {
   });
 
   const board: Board = { board: requireString(raw.board, 'board'), columns };
+  if (raw.priorities !== undefined) board.priorities = parsePriorities(raw.priorities);
   assertValid(board);
   return board;
 }
@@ -119,6 +131,7 @@ export function createInitialBoard(name: string): Board {
   const column = (id: string, title: string) => ({ id, name: title, tasks: [] });
   return {
     board: name.trim() || 'Kanban',
+    priorities: DEFAULT_PRIORITIES.map((p) => ({ ...p })),
     columns: [column('backlog', 'Backlog'), column('in-progress', 'In Progress'), column('done', 'Done')],
   };
 }
@@ -126,6 +139,7 @@ export function createInitialBoard(name: string): Board {
 export function serializeBoard(board: Board): string {
   const out = {
     board: board.board,
+    ...(board.priorities ? { priorities: board.priorities.map((p) => ({ ...p })) } : {}),
     columns: board.columns.map((c) => ({ id: c.id, name: c.name, tasks: c.tasks.map(serializeTask) })),
   };
   return JSON.stringify(out, null, 2) + '\n';

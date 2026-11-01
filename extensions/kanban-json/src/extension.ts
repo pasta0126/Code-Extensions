@@ -1,14 +1,6 @@
 import * as vscode from 'vscode';
+import { createInitialBoard, serializeBoard } from './board/json';
 import { KanbanEditorProvider, VIEW_TYPE } from './editor/KanbanEditorProvider';
-
-const SAMPLE = {
-  board: 'My board',
-  columns: [
-    { id: 'todo', name: 'To do', tasks: [] },
-    { id: 'in-progress', name: 'In progress', tasks: [] },
-    { id: 'done', name: 'Done', tasks: [] },
-  ],
-};
 
 export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
@@ -26,7 +18,7 @@ export function activate(context: vscode.ExtensionContext): void {
       try {
         await vscode.workspace.fs.stat(uri);
       } catch {
-        await vscode.workspace.fs.writeFile(uri, Buffer.from(JSON.stringify(SAMPLE, null, 2) + '\n'));
+        await vscode.workspace.fs.writeFile(uri, Buffer.from(serializeBoard(createInitialBoard('My board'))));
       }
       await vscode.commands.executeCommand('vscode.openWith', uri, VIEW_TYPE);
     }),

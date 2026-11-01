@@ -2,11 +2,11 @@
 (function () {
   const vscode = acquireVsCodeApi();
   const app = document.getElementById('app');
-  // Stored values stay as in kanban.json; only the displayed labels are English.
-  const PRIORITY_LABELS = { alta: 'High', media: 'Medium', baja: 'Low' };
 
   const s = {
     board: null,
+    priorities: [],
+    priorityAliases: {},
     error: null,
     hostText: '',
   };
@@ -36,10 +36,38 @@
     if (msg.type === 'state') {
       s.hostText = msg.text;
       s.board = msg.board;
+      s.priorities = msg.priorities || [];
+      s.priorityAliases = msg.priorityAliases || {};
       s.error = msg.error;
       render();
     }
   });
+
+  // ---------- priorities ----------
+  /** Defined priority for a stored id (legacy aliases apply only without a priorities block), or undefined. */
+  function resolvePriority(id) {
+    const key = s.priorityAliases[id] || id;
+    return s.priorities.find((p) => p.id === key);
+  }
+
+  function priorityBadge(id) {
+    const p = resolvePriority(id);
+    const badge = h('span', { class: 'prio ' + (p ? 'prio-' + p.id : 'prio-unknown') }, p ? p.name : id);
+    if (p && p.color) {
+      badge.classList.add('prio-colored');
+      badge.style.setProperty('--prio-color', p.color);
+    }
+    return badge;
+  }
+
+  function priorityOptions(task) {
+    const current = task && task.priority ? task.priority : '';
+    const known = current ? resolvePriority(current) : undefined;
+    const selectedId = known ? known.id : current;
+    const options = s.priorities.map((p) => h('option', { value: p.id, selected: selectedId === p.id }, p.name));
+    if (current && !known) options.push(h('option', { value: current, selected: true }, current));
+    return options;
+  }
 
   // ---------- rendering ----------
   function render() {
@@ -142,12 +170,12 @@
   function cardView(task) {
     const card = h(
       'article',
-      { class: 'card', draggable: 'true', 'data-task': task.id, ondblclick: () => taskDialog(task) },
+      { class: 'card', draggable: 'true', title: 'Click to edit', 'data-task': task.id, onclick: () => taskDialog(task) },
       h(
         'div',
         { class: 'card-head' },
         h('span', { class: 'id' }, task.id),
-        task.priority && h('span', { class: 'prio prio-' + task.priority }, PRIORITY_LABELS[task.priority] || task.priority),
+        task.priority && priorityBadge(task.priority),
       ),
       h('div', { class: 'card-title' }, task.title),
       task.description && h('div', { class: 'card-desc' }, task.description),
@@ -233,7 +261,7 @@
       'select',
       {},
       h('option', { value: '' }, '—'),
-      ['alta', 'media', 'baja'].map((p) => h('option', { value: p, selected: task && task.priority === p }, PRIORITY_LABELS[p])),
+      priorityOptions(task),
     );
     const labels = h('input', { type: 'text', placeholder: 'comma-separated', value: task && task.labels ? task.labels.join(', ') : '' });
     const due = h('input', { type: 'date', value: task && task.dueDate ? task.dueDate : '' });
@@ -254,7 +282,7 @@
         h(
           'div',
           { class: 'dialog-bar' },
-          task && h('button', { class: 'danger', value: 'delete', formnovalidate: true }, 'Delete'),
+          task && h('button', { type: 'button', class: 'danger', onclick: () => dlg.close('delete') }, 'Delete'),
           h('span', { class: 'spacer' }),
           h('button', { value: 'cancel', formnovalidate: true }, 'Cancel'),
           h('button', { class: 'primary', value: 'ok' }, 'Save'),

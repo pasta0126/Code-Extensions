@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { createInitialBoard, parseBoard, serializeBoard } from '../src/board/json';
-import { BoardError } from '../src/board/model';
+import { BoardError, effectivePriorities, resolvePriority, unknownPriorities } from '../src/board/model';
 import {
   addColumn,
   addTask,
@@ -28,11 +28,6 @@ describe('board-model: formato', () => {
   it('no añade dueDate a tareas que no lo tenían', () => {
     const done = JSON.parse(serializeBoard(load())).columns[4].tasks[0];
     expect('dueDate' in done).toBe(false);
-  });
-
-  it('rechaza prioridad desconocida indicando tarea y valor', () => {
-    const bad = sample.replace('"priority": "alta"', '"priority": "urgente"');
-    expect(() => parseBoard(bad)).toThrow(/urgente/);
   });
 
   it('rechaza ids de tarea duplicados entre columnas', () => {
@@ -105,5 +100,60 @@ describe('board-model: inicialización', () => {
     const board = createInitialBoard('Demo');
     expect(board.columns.map((c) => c.id)).toEqual(['backlog', 'in-progress', 'done']);
     expect(parseBoard(serializeBoard(board))).toEqual(board);
+  });
+});
+
+describe('priorities', () => {
+  const withBlock = (priorities: unknown) => {
+    const raw = JSON.parse(sample);
+    raw.priorities = priorities;
+    return JSON.stringify(raw);
+  };
+
+  it('usa high/medium/low por defecto sin bloque', () => {
+    expect(effectivePriorities(load()).map((p) => p.id)).toEqual(['high', 'medium', 'low']);
+  });
+
+  it('acepta un bloque válido y conserva el orden', () => {
+    const board = parseBoard(
+      withBlock([
+        { id: 'critical', name: 'Critical', color: '#d73a49' },
+        { id: 'high', name: 'High' },
+      ]),
+    );
+    expect(effectivePriorities(board).map((p) => p.id)).toEqual(['critical', 'high']);
+  });
+
+  it('rechaza ids duplicados y elementos sin nombre', () => {
+    expect(() => parseBoard(withBlock([{ id: 'a', name: 'A' }, { id: 'a', name: 'B' }]))).toThrow(/Duplicate priority id: a/);
+    expect(() => parseBoard(withBlock([{ id: 'a' }]))).toThrow(/priorities\[0\]\.name/);
+  });
+
+  it('interpreta alta/media/baja como alias sin bloque, sin reescribirlas', () => {
+    const board = load();
+    expect(resolvePriority(board, 'alta')?.id).toBe('high');
+    expect(JSON.stringify(JSON.parse(serializeBoard(board)))).toContain('"alta"');
+  });
+
+  it('no aplica alias legacy cuando hay bloque', () => {
+    const board = parseBoard(withBlock([{ id: 'high', name: 'High' }]));
+    expect(resolvePriority(board, 'alta')).toBeUndefined();
+    expect(unknownPriorities(board)).toContain('alta');
+  });
+
+  it('carga con prioridad desconocida y la conserva', () => {
+    const board = parseBoard(sample.replace('"priority": "alta"', '"priority": "urgent"'));
+    expect(unknownPriorities(board)).toEqual(['urgent']);
+    expect(serializeBoard(board)).toContain('"urgent"');
+  });
+
+  it('round-trip con bloque lo conserva y sin bloque no lo añade', () => {
+    const block = [{ id: 'critical', name: 'Critical', color: '#d73a49' }];
+    expect(JSON.parse(serializeBoard(parseBoard(withBlock(block)))).priorities).toEqual(block);
+    expect('priorities' in JSON.parse(serializeBoard(load()))).toBe(false);
+  });
+
+  it('el tablero inicial incluye las prioridades por defecto', () => {
+    expect(createInitialBoard('Demo').priorities?.map((p) => p.id)).toEqual(['high', 'medium', 'low']);
   });
 });
