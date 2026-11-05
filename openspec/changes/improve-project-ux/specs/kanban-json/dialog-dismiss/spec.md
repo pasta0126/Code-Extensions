@@ -1,0 +1,17 @@
+## MODIFIED Requirements
+
+### Requirement: Cierre al hacer clic fuera
+El sistema SHALL cerrar cualquier diálogo de la webview (detalle de tarea en edición y creación, nueva columna, renombrar columna, nuevo y editar proyecto) cuando el usuario hace clic en el área exterior al diálogo. El cierre SHALL equivaler a «Cancel»: no se guarda ningún cambio ni se modifica el documento. Las confirmaciones (p. ej. eliminar una columna con tareas) son modales nativos de VS Code, no diálogos de la webview, y quedan fuera de este requisito.
+
+#### Scenario: Clic en el fondo
+- **WHEN** un diálogo está abierto y el usuario hace clic en el fondo exterior
+- **THEN** el diálogo se cierra
+- **AND** el documento `kanban.json` no cambia
+
+#### Scenario: Clic dentro del diálogo
+- **WHEN** el usuario hace clic sobre el contenido del diálogo (campos, etiquetas, espacios entre campos)
+- **THEN** el diálogo permanece abierto
+
+#### Scenario: Diálogo de proyecto
+- **WHEN** el diálogo de nuevo o editar proyecto está abierto sobre el de detalle y el usuario hace clic fuera
+- **THEN** se cierra solo el diálogo de proyecto y el de detalle sigue abierto con sus datos

@@ -9,6 +9,7 @@
     priorityAliases: {},
     projects: [],
     projectPalette: {},
+    projectFilter: '', // view-only: '' = all, NO_PROJECT = tasks without project, or a project id
     onProjects: null,
     error: null,
     hostText: '',
@@ -44,6 +45,7 @@
       s.projects = msg.projects || [];
       s.projectPalette = msg.projectPalette || {};
       s.error = msg.error;
+      if (!filterStillValid()) s.projectFilter = '';
       render();
       if (s.onProjects) s.onProjects();
     }
@@ -78,6 +80,27 @@
   // ---------- projects ----------
   const SAFE_COLOR = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i;
   const findProject = (id) => s.projects.find((p) => p.id === id);
+  const NO_PROJECT = '__none__';
+  /** Projects in alphabetical order (case/accent-insensitive); never mutates the board's own order. */
+  const sortedProjects = () => [...s.projects].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+  const matchesFilter = (task) => (s.projectFilter === '' ? true : s.projectFilter === NO_PROJECT ? !task.project : task.project === s.projectFilter);
+  function filterStillValid() {
+    const f = s.projectFilter;
+    if (f === '' || f === NO_PROJECT) return true;
+    if (s.projects.some((p) => p.id === f)) return true;
+    return !!s.board && s.board.columns.some((c) => c.tasks.some((t) => t.project === f));
+  }
+  /**
+   * Maps a drop position among the visible cards (dragged one excluded) to an index in the
+   * column's full task list (dragged one excluded), so hidden tasks keep their relative order.
+   */
+  function visibleToRealIndex(column, draggedId, visibleIndex) {
+    const real = column.tasks.filter((t) => t.id !== draggedId);
+    const visible = real.filter(matchesFilter);
+    if (visibleIndex < visible.length) return real.indexOf(visible[visibleIndex]);
+    if (visible.length === 0) return real.length;
+    return real.indexOf(visible[visible.length - 1]) + 1;
+  }
 
   // ---------- rendering ----------
   function render() {
@@ -89,8 +112,27 @@
       'div',
       { class: 'toolbar' },
       h('span', { class: 'title' }, s.board ? s.board.board : ''),
+      s.board && filterSelect(),
       h('button', { class: 'link', onclick: openAsText }, 'Open as text'),
     );
+  }
+
+  function filterSelect() {
+    const sel = h(
+      'select',
+      { class: 'project-filter', title: 'Filter by project', 'aria-label': 'Filter by project' },
+      h('option', { value: '' }, 'All projects'),
+      h('option', { value: NO_PROJECT }, 'No project'),
+      sortedProjects().map((p) => h('option', { value: p.id }, p.name)),
+    );
+    // a project used by tasks but not defined stays selectable while it is the active filter
+    if (s.projectFilter && s.projectFilter !== NO_PROJECT && !findProject(s.projectFilter)) sel.append(h('option', { value: s.projectFilter }, s.projectFilter));
+    sel.value = s.projectFilter;
+    sel.addEventListener('change', () => {
+      s.projectFilter = sel.value;
+      render();
+    });
+    return sel;
   }
 
   const openAsText = () => post({ type: 'openAsText' });
@@ -141,7 +183,7 @@
   }
 
   function columnView(column) {
-    const list = h('div', { class: 'tasks', 'data-column': column.id }, column.tasks.map(cardView));
+    const list = h('div', { class: 'tasks', 'data-column': column.id }, column.tasks.filter(matchesFilter).map(cardView));
     list.addEventListener('dragover', (e) => {
       e.preventDefault();
       list.classList.add('over');
@@ -153,7 +195,7 @@
     list.addEventListener('drop', (e) => {
       e.preventDefault();
       const taskId = e.dataTransfer.getData('text/plain');
-      const index = dropIndex(list, e.clientY);
+      const index = visibleToRealIndex(column, taskId, dropIndex(list, e.clientY));
       clearDropMarker();
       if (taskId) op({ kind: 'moveTask', taskId, toColumnId: column.id, toIndex: index });
     });
@@ -169,11 +211,11 @@
           { title: 'Double-click to rename', ondblclick: () => askText('Rename column', column.name, (name) => op({ kind: 'renameColumn', columnId: column.id, name })) },
           column.name,
         ),
-        h('span', { class: 'count' }, column.tasks.length),
+        h('span', { class: 'count' }, s.projectFilter === '' ? column.tasks.length : column.tasks.filter(matchesFilter).length + '/' + column.tasks.length),
         h('button', { class: 'icon', title: 'Delete column', onclick: () => op({ kind: 'deleteColumn', columnId: column.id }) }, '×'),
       ),
       list,
-      h('button', { class: 'add-task', onclick: () => taskDialog(null, column.id) }, '+ Add task'),
+      h('button', { class: 'add-task', onclick: () => taskDialog(null, column.id, s.projectFilter && s.projectFilter !== NO_PROJECT ? s.projectFilter : '') }, '+ Add task'),
     );
   }
 
@@ -259,6 +301,13 @@
     });
   }
 
+  /** Single entry point for every webview dialog, so all of them close on an outside click. */
+  function openDialog(dlg) {
+    dismissOnOutsideClick(dlg);
+    document.body.append(dlg);
+    dlg.showModal();
+  }
+
   function askText(title, value, onOk) {
     const input = h('input', { type: 'text', value, required: true });
     const dlg = h(
@@ -276,13 +325,11 @@
       if (dlg.returnValue === 'ok' && input.value.trim()) onOk(input.value.trim());
       dlg.remove();
     });
-    dismissOnOutsideClick(dlg);
-    document.body.append(dlg);
-    dlg.showModal();
+    openDialog(dlg);
     input.select();
   }
 
-  function taskDialog(task, columnId) {
+  function taskDialog(task, columnId, defaultProject) {
     const f = (label, control) => h('label', {}, h('span', {}, label), control);
     const title = h('input', { type: 'text', required: true, value: task ? task.title : '' });
     const description = h('textarea', { rows: '3' });
@@ -295,13 +342,13 @@
       priorityOptions(task),
     );
     const NEW_PROJECT = '__new__';
-    let currentProject = task && task.project ? task.project : '';
+    let currentProject = task ? task.project || '' : defaultProject || '';
     let pendingNew = null;
     const project = h('select', {});
     const editProject = h('button', { type: 'button', class: 'icon', title: 'Edit project' }, '✎');
     const fillProjects = () => {
       project.replaceChildren(h('option', { value: '' }, '—'));
-      for (const p of s.projects) project.append(h('option', { value: p.id }, p.name));
+      for (const p of sortedProjects()) project.append(h('option', { value: p.id }, p.name));
       // keep an unknown stored id selectable so saving does not drop it
       if (currentProject && !findProject(currentProject)) project.append(h('option', { value: currentProject }, currentProject));
       project.append(h('option', { value: NEW_PROJECT }, 'New project…'));
@@ -380,9 +427,7 @@
       s.onProjects = null;
       dlg.remove();
     });
-    dismissOnOutsideClick(dlg);
-    document.body.append(dlg);
-    dlg.showModal();
+    openDialog(dlg);
     title.focus();
   }
 
@@ -427,9 +472,7 @@
       }
       dlg.remove();
     });
-    dismissOnOutsideClick(dlg);
-    document.body.append(dlg);
-    dlg.showModal();
+    openDialog(dlg);
     name.select();
   }
 

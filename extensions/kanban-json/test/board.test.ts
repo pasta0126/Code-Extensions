@@ -251,3 +251,28 @@ describe('projects', () => {
     expect(updateTask(withP, id, { project: null }).columns[0]!.tasks[0]!.project).toBeUndefined();
   });
 });
+
+describe('quitar el proyecto de una tarea', () => {
+  const withProject = () => {
+    const raw = JSON.parse(sample);
+    raw.projects = [{ id: 'darwin', name: 'Darwin' }];
+    raw.columns[0].tasks[0].project = 'darwin';
+    return parseBoard(JSON.stringify(raw));
+  };
+
+  it('updateTask con project null elimina el campo y conserva el resto', () => {
+    const board = withProject();
+    const id = board.columns[0]!.tasks[0]!.id;
+    const next = updateTask(board, id, { title: board.columns[0]!.tasks[0]!.title, project: null });
+    expect(next.columns[0]!.tasks[0]!.project).toBeUndefined();
+    expect(JSON.stringify(JSON.parse(serializeBoard(next)).columns[0].tasks[0])).not.toContain('"project"');
+  });
+
+  it('también quita un proyecto desconocido', () => {
+    const raw = JSON.parse(sample);
+    raw.columns[0].tasks[0].project = 'legacy';
+    const board = parseBoard(JSON.stringify(raw));
+    const next = updateTask(board, board.columns[0]!.tasks[0]!.id, { project: null });
+    expect(next.columns[0]!.tasks[0]!.project).toBeUndefined();
+  });
+});

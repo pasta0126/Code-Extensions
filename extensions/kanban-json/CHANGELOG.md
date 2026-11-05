@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.0
+
+- Filter the board by project from the toolbar ("All projects", "No project" or a project); the filter is view-only and does not change `kanban.json`.
+- Projects are always listed alphabetically in the UI (the order in the file is untouched).
+- New tasks start with the filtered project preselected.
+- Every webview dialog (column, project, task) closes when clicking outside it.
+
 ## 0.4.0
 
 - New optional `projects` block in `kanban.json` and `project` field on tasks; cards show a colored stripe and the project name.
