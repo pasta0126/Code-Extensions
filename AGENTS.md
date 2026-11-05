@@ -19,7 +19,7 @@ Desarrollo dirigido por especificaciones. Antes de escribir código para una fun
 - Los requisitos usan `SHALL` y cada uno lleva al menos un `#### Scenario:` con `WHEN`/`THEN`.
 - Si la implementación se desvía de la spec o el diseño, actualiza los artefactos del cambio (`/opsx:update`) en lugar de dejarlos desfasados.
 - Marca las tareas en `tasks.md` (`- [x]`) a medida que se completan.
-- Cambios activos: `improve-project-ux` (pendiente confirmar en F5 el fallo de quitar proyecto).
+- Cambios activos: ninguno.
 
 ## Añadir una extensión nueva
 
