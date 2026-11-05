@@ -56,6 +56,21 @@ Column ids and task ids must be unique.
 
 If `priorities` is missing, those three defaults are used, and the old ids `alta`, `media` and `baja` are read as `high`, `medium` and `low` (files are not rewritten). A task whose priority is not defined still loads: it shows the raw id in a neutral style and a warning is displayed.
 
+### Projects
+
+`projects` is optional and defines the projects tasks can belong to. Each entry has an `id`, a `name` and an optional `color`. A task references a project with `"project": "<id>"`, and its card shows a colored stripe on the left plus the project name.
+
+```json
+"projects": [
+  { "id": "portal", "name": "Portal", "color": "blue" },
+  { "id": "darwin", "name": "Darwin", "color": "#ff8800" }
+]
+```
+
+Projects can be created and edited from the task dialog (**New project…** / ✎), choosing one of the 16 palette colors: `red`, `orange`, `amber`, `yellow`, `lime`, `green`, `emerald`, `teal`, `cyan`, `sky`, `blue`, `indigo`, `violet`, `purple`, `pink`, `gray`. For a custom color, edit the JSON and write a hex value (`#RRGGBB` or `#RGB`) in `color`. A task with an undefined project, or a project with an invalid color, still loads (no stripe) and a warning is shown.
+
+Dialogs can also be dismissed by clicking outside them.
+
 ## License
 
 Public domain ([Unlicense](LICENSE)).

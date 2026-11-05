@@ -1,14 +1,14 @@
 import { assertValid } from './json';
-import { Board, BoardError, Column, Task, TaskPatch } from './model';
+import { Board, BoardError, Column, Project, Task, TaskPatch } from './model';
 
-function slugify(name: string): string {
+function slugify(name: string, fallback = 'column'): string {
   const slug = name
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '')
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
-  return slug || 'column';
+  return slug || fallback;
 }
 
 export function nextColumnId(board: Board, name: string): string {
@@ -76,6 +76,39 @@ export function deleteColumn(board: Board, columnId: string): Board {
   return next;
 }
 
+function nextProjectId(board: Board, name: string): string {
+  const base = slugify(name, 'project');
+  const taken = new Set((board.projects ?? []).map((p) => p.id));
+  if (!taken.has(base)) return base;
+  let n = 2;
+  while (taken.has(`${base}-${n}`)) n++;
+  return `${base}-${n}`;
+}
+
+export function addProject(board: Board, name: string, color?: string): Board {
+  const next = clone(board);
+  const clean = requireText(name, 'The project name');
+  const project: Project = { id: nextProjectId(board, clean), name: clean };
+  if (color) project.color = color;
+  next.projects = [...(next.projects ?? []), project];
+  return next;
+}
+
+/** `color: null` clears the color; `undefined` leaves it (e.g. a hand-written hex) untouched. */
+export function updateProject(
+  board: Board,
+  projectId: string,
+  patch: { name?: string; color?: string | null },
+): Board {
+  const next = clone(board);
+  const project = next.projects?.find((p) => p.id === projectId);
+  if (!project) throw new BoardError(`Project ${projectId} does not exist`);
+  if (patch.name !== undefined) project.name = requireText(patch.name, 'The project name');
+  if (patch.color === null) delete project.color;
+  else if (patch.color !== undefined) project.color = patch.color;
+  return next;
+}
+
 export function addTask(
   board: Board,
   columnId: string,
@@ -92,7 +125,7 @@ export function addTask(
 
 function applyPatch(task: Task, patch: TaskPatch): Task {
   if (patch.title !== undefined) task.title = requireText(patch.title, 'The title');
-  const fields = ['description', 'assignee', 'priority', 'labels', 'dueDate'] as const;
+  const fields = ['description', 'assignee', 'priority', 'project', 'labels', 'dueDate'] as const;
   for (const key of fields) {
     const value = patch[key];
     if (value === undefined) continue;

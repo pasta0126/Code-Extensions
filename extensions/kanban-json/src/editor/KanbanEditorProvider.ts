@@ -2,7 +2,17 @@ import { randomBytes } from 'node:crypto';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
 import { createInitialBoard, parseBoard, serializeBoard } from '../board/json';
-import { Board, BoardError, effectivePriorities, LEGACY_PRIORITY_IDS, unknownPriorities } from '../board/model';
+import {
+  Board,
+  BoardError,
+  effectivePriorities,
+  invalidProjectColors,
+  LEGACY_PRIORITY_IDS,
+  PROJECT_COLORS,
+  resolveProjectColor,
+  unknownPriorities,
+  unknownProjects,
+} from '../board/model';
 import * as ops from '../board/operations';
 import { Operation, StateMessage, WebviewMessage } from './protocol';
 
@@ -17,6 +27,7 @@ export class KanbanEditorProvider implements vscode.CustomTextEditorProvider {
     panel.webview.html = this.html(panel.webview, media);
 
     let warnedUnknown = '';
+    let warnedProjects = '';
     const sendState = () => {
       const text = document.getText();
       let msg: StateMessage;
@@ -29,6 +40,13 @@ export class KanbanEditorProvider implements vscode.CustomTextEditorProvider {
           error: null,
           priorities: effectivePriorities(board),
           priorityAliases: board.priorities ? {} : { ...LEGACY_PRIORITY_IDS },
+          projects: (board.projects ?? []).map((p) => ({
+            id: p.id,
+            name: p.name,
+            color: resolveProjectColor(p.color),
+            paletteName: p.color !== undefined && p.color in PROJECT_COLORS ? p.color : undefined,
+          })),
+          projectPalette: { ...PROJECT_COLORS },
         };
         const unknown = unknownPriorities(board).join(', ');
         if (unknown !== warnedUnknown) {
@@ -37,8 +55,25 @@ export class KanbanEditorProvider implements vscode.CustomTextEditorProvider {
             void vscode.window.showWarningMessage(`Kanban: tasks use undefined priorities: ${unknown}.`);
           }
         }
+        const problems = [
+          ...unknownProjects(board).map((id) => `undefined project "${id}"`),
+          ...invalidProjectColors(board).map((p) => `invalid color "${p.color}" in project "${p.name}"`),
+        ].join('; ');
+        if (problems !== warnedProjects) {
+          warnedProjects = problems;
+          if (problems) void vscode.window.showWarningMessage(`Kanban: ${problems}.`);
+        }
       } catch (e) {
-        msg = { type: 'state', text, board: null, error: (e as Error).message, priorities: [], priorityAliases: {} };
+        msg = {
+          type: 'state',
+          text,
+          board: null,
+          error: (e as Error).message,
+          priorities: [],
+          priorityAliases: {},
+          projects: [],
+          projectPalette: { ...PROJECT_COLORS },
+        };
       }
       void panel.webview.postMessage(msg);
     };
@@ -129,6 +164,10 @@ function apply(board: Board, op: Operation): Board {
       return ops.deleteColumn(board, op.columnId);
     case 'addTask':
       return ops.addTask(board, op.columnId, op.task, new Date().toISOString().slice(0, 10));
+    case 'addProject':
+      return ops.addProject(board, op.name, op.color);
+    case 'updateProject':
+      return ops.updateProject(board, op.projectId, { name: op.name, color: op.color });
     case 'updateTask':
       return ops.updateTask(board, op.taskId, op.patch);
     case 'deleteTask':

@@ -18,5 +18,5 @@
 - [x] 3.1 Tests de parser: bloque válido, duplicados, sin `name`, defaults, alias legacy, alias con bloque, desconocida sin error
 - [x] 3.2 Tests de round-trip con y sin `priorities` (el legacy `alta` se conserva) y de `createInitialBoard`
 - [x] 3.3 Actualizar `README.md` y `CHANGELOG.md` de la extensión (en inglés), con la entrada 0.3.0 marcada **BREAKING**, y subir `package.json`/`package-lock.json` de 0.2.2 a 0.3.0
-- [ ] 3.4 Prueba manual: tablero nuevo, fichero legacy, prioridades personalizadas con color y prioridad desconocida
+- [x] 3.4 Prueba manual: tablero nuevo, fichero legacy, prioridades personalizadas con color y prioridad desconocida
 - [x] 3.5 Ejecutar `npm test` en `extensions/kanban-json` y `npx @fission-ai/openspec validate add-custom-priorities`

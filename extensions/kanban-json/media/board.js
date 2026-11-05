@@ -7,6 +7,9 @@
     board: null,
     priorities: [],
     priorityAliases: {},
+    projects: [],
+    projectPalette: {},
+    onProjects: null,
     error: null,
     hostText: '',
   };
@@ -38,8 +41,11 @@
       s.board = msg.board;
       s.priorities = msg.priorities || [];
       s.priorityAliases = msg.priorityAliases || {};
+      s.projects = msg.projects || [];
+      s.projectPalette = msg.projectPalette || {};
       s.error = msg.error;
       render();
+      if (s.onProjects) s.onProjects();
     }
   });
 
@@ -68,6 +74,10 @@
     if (current && !known) options.push(h('option', { value: current, selected: true }, current));
     return options;
   }
+
+  // ---------- projects ----------
+  const SAFE_COLOR = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i;
+  const findProject = (id) => s.projects.find((p) => p.id === id);
 
   // ---------- rendering ----------
   function render() {
@@ -168,15 +178,17 @@
   }
 
   function cardView(task) {
+    const project = task.project ? findProject(task.project) : undefined;
     const card = h(
       'article',
-      { class: 'card', draggable: 'true', title: 'Click to edit', 'data-task': task.id, onclick: () => taskDialog(task) },
+      { class: 'card' + (project && project.color ? ' has-project' : ''), draggable: 'true', title: 'Click to edit', 'data-task': task.id, onclick: () => taskDialog(task) },
       h(
         'div',
         { class: 'card-head' },
         h('span', { class: 'id' }, task.id),
         task.priority && priorityBadge(task.priority),
       ),
+      task.project && h('div', { class: 'project-name', title: 'Project' }, project ? project.name : task.project),
       h('div', { class: 'card-title' }, task.title),
       task.description && h('div', { class: 'card-desc' }, task.description),
       task.labels && task.labels.length > 0 && h('div', { class: 'labels' }, task.labels.map((l) => h('span', { class: 'label' }, l))),
@@ -187,6 +199,7 @@
         task.dueDate && h('span', { class: 'due' + (isOverdue(task, s.board) ? ' overdue' : '') }, '📅 ' + task.dueDate),
       ),
     );
+    if (project && project.color && SAFE_COLOR.test(project.color)) card.style.setProperty('--project-color', project.color);
     card.addEventListener('dragstart', (e) => {
       e.dataTransfer.setData('text/plain', task.id);
       e.dataTransfer.effectAllowed = 'move';
@@ -229,6 +242,23 @@
   }
 
   // ---------- dialogs (window.prompt/confirm are unavailable in webviews) ----------
+  /** Click on the backdrop closes like Cancel; a drag that starts inside and ends outside does not. */
+  function dismissOnOutsideClick(dlg) {
+    const outside = (e) => {
+      if (e.target !== dlg) return false;
+      const r = dlg.getBoundingClientRect();
+      return e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom;
+    };
+    let pressedOutside = false;
+    dlg.addEventListener('mousedown', (e) => {
+      pressedOutside = outside(e);
+    });
+    dlg.addEventListener('click', (e) => {
+      if (pressedOutside && outside(e)) dlg.close('cancel');
+      pressedOutside = false;
+    });
+  }
+
   function askText(title, value, onOk) {
     const input = h('input', { type: 'text', value, required: true });
     const dlg = h(
@@ -246,6 +276,7 @@
       if (dlg.returnValue === 'ok' && input.value.trim()) onOk(input.value.trim());
       dlg.remove();
     });
+    dismissOnOutsideClick(dlg);
     document.body.append(dlg);
     dlg.showModal();
     input.select();
@@ -263,6 +294,46 @@
       h('option', { value: '' }, '—'),
       priorityOptions(task),
     );
+    const NEW_PROJECT = '__new__';
+    let currentProject = task && task.project ? task.project : '';
+    let pendingNew = null;
+    const project = h('select', {});
+    const editProject = h('button', { type: 'button', class: 'icon', title: 'Edit project' }, '✎');
+    const fillProjects = () => {
+      project.replaceChildren(h('option', { value: '' }, '—'));
+      for (const p of s.projects) project.append(h('option', { value: p.id }, p.name));
+      // keep an unknown stored id selectable so saving does not drop it
+      if (currentProject && !findProject(currentProject)) project.append(h('option', { value: currentProject }, currentProject));
+      project.append(h('option', { value: NEW_PROJECT }, 'New project…'));
+      project.value = currentProject;
+      editProject.disabled = !findProject(currentProject);
+    };
+    s.onProjects = () => {
+      if (pendingNew) {
+        const created = s.projects.find((p) => !pendingNew.has(p.id));
+        if (created) {
+          currentProject = created.id;
+          pendingNew = null;
+        }
+      }
+      fillProjects();
+    };
+    fillProjects();
+    project.addEventListener('change', () => {
+      if (project.value !== NEW_PROJECT) {
+        currentProject = project.value;
+        editProject.disabled = !findProject(currentProject);
+        return;
+      }
+      project.value = currentProject;
+      projectDialog(null, () => {
+        pendingNew = new Set(s.projects.map((p) => p.id));
+      });
+    });
+    editProject.addEventListener('click', () => {
+      const p = findProject(currentProject);
+      if (p) projectDialog(p);
+    });
     const labels = h('input', { type: 'text', placeholder: 'comma-separated', value: task && task.labels ? task.labels.join(', ') : '' });
     const due = h('input', { type: 'date', value: task && task.dueDate ? task.dueDate : '' });
 
@@ -277,6 +348,7 @@
         f('Description', description),
         f('Assignee', assignee),
         f('Priority', priority),
+        f('Project', h('div', { class: 'project-row' }, project, editProject)),
         f('Labels', labels),
         f('Due date', due),
         h(
@@ -296,6 +368,7 @@
           description: description.value.trim() || null,
           assignee: assignee.value.trim() || null,
           priority: priority.value || null,
+          project: currentProject || null,
           labels: labels.value.split(',').map((l) => l.trim()).filter(Boolean),
           dueDate: due.value || null,
         };
@@ -304,11 +377,60 @@
       } else if (dlg.returnValue === 'delete') {
         op({ kind: 'deleteTask', taskId: task.id });
       }
+      s.onProjects = null;
       dlg.remove();
     });
+    dismissOnOutsideClick(dlg);
     document.body.append(dlg);
     dlg.showModal();
     title.focus();
+  }
+
+  /** Create (project == null) or edit a project: name + 16-swatch grid, no free color picker. */
+  function projectDialog(project, onCreate) {
+    const name = h('input', { type: 'text', required: true, value: project ? project.name : '' });
+    let chosen; // undefined = untouched (keeps a hand-written hex)
+    let selected = project && project.paletteName ? project.paletteName : undefined;
+    const grid = h('div', { class: 'swatches', role: 'radiogroup', 'aria-label': 'Color' });
+    const paint = () => {
+      for (const b of grid.children) b.setAttribute('aria-checked', String(b.dataset.color === selected));
+    };
+    for (const [colorName, hex] of Object.entries(s.projectPalette)) {
+      const b = h('button', { type: 'button', class: 'swatch', role: 'radio', title: colorName, 'data-color': colorName });
+      b.style.setProperty('--swatch', hex);
+      b.addEventListener('click', () => {
+        selected = chosen = colorName;
+        paint();
+      });
+      grid.append(b);
+    }
+    paint();
+    const dlg = h(
+      'dialog',
+      {},
+      h(
+        'form',
+        { method: 'dialog' },
+        h('h3', {}, project ? 'Edit project' : 'New project'),
+        h('label', {}, h('span', {}, 'Name'), name),
+        h('div', { class: 'field' }, h('span', {}, 'Color'), grid),
+        h('div', { class: 'dialog-bar' }, h('button', { value: 'cancel', formnovalidate: true }, 'Cancel'), h('button', { class: 'primary', value: 'ok' }, 'Save')),
+      ),
+    );
+    dlg.addEventListener('close', () => {
+      if (dlg.returnValue === 'ok' && name.value.trim()) {
+        if (project) op({ kind: 'updateProject', projectId: project.id, name: name.value.trim(), color: chosen });
+        else {
+          if (onCreate) onCreate();
+          op({ kind: 'addProject', name: name.value.trim(), color: chosen });
+        }
+      }
+      dlg.remove();
+    });
+    dismissOnOutsideClick(dlg);
+    document.body.append(dlg);
+    dlg.showModal();
+    name.select();
   }
 
   function dropNulls(obj) {

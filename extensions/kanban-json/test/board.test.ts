@@ -2,14 +2,25 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { createInitialBoard, parseBoard, serializeBoard } from '../src/board/json';
-import { BoardError, effectivePriorities, resolvePriority, unknownPriorities } from '../src/board/model';
+import {
+  BoardError,
+  effectivePriorities,
+  invalidProjectColors,
+  PROJECT_COLORS,
+  resolvePriority,
+  resolveProjectColor,
+  unknownPriorities,
+  unknownProjects,
+} from '../src/board/model';
 import {
   addColumn,
+  addProject,
   addTask,
   deleteColumn,
   deleteTask,
   moveTask,
   renameColumn,
+  updateProject,
   updateTask,
 } from '../src/board/operations';
 
@@ -155,5 +166,88 @@ describe('priorities', () => {
 
   it('el tablero inicial incluye las prioridades por defecto', () => {
     expect(createInitialBoard('Demo').priorities?.map((p) => p.id)).toEqual(['high', 'medium', 'low']);
+  });
+});
+
+describe('projects', () => {
+  const withProjects = (projects: unknown, taskProject?: string) => {
+    const raw = JSON.parse(sample);
+    raw.projects = projects;
+    if (taskProject !== undefined) raw.columns[0].tasks[0].project = taskProject;
+    return JSON.stringify(raw);
+  };
+
+  it('acepta un bloque válido y conserva el orden', () => {
+    const board = parseBoard(
+      withProjects([
+        { id: 'portal', name: 'Portal Informes', color: 'blue' },
+        { id: 'darwin', name: 'Darwin', color: '#FF8800' },
+      ]),
+    );
+    expect(board.projects?.map((p) => p.id)).toEqual(['portal', 'darwin']);
+  });
+
+  it('rechaza ids duplicados y elementos sin nombre', () => {
+    expect(() => parseBoard(withProjects([{ id: 'a', name: 'A' }, { id: 'a', name: 'B' }]))).toThrow(/Duplicate project id: a/);
+    expect(() => parseBoard(withProjects([{ id: 'a' }]))).toThrow(/projects\[0\]\.name/);
+  });
+
+  it('resuelve colores por nombre, hex de 3 y 6 dígitos, e inválidos', () => {
+    expect(Object.keys(PROJECT_COLORS)).toHaveLength(16);
+    expect(resolveProjectColor('teal')).toBe(PROJECT_COLORS.teal);
+    expect(resolveProjectColor('#ff8800')).toBe('#ff8800');
+    expect(resolveProjectColor('#F80')).toBe('#F80');
+    expect(resolveProjectColor('azulito')).toBeUndefined();
+    expect(resolveProjectColor('#ff88')).toBeUndefined();
+    expect(resolveProjectColor('toString')).toBeUndefined();
+    expect(resolveProjectColor(undefined)).toBeUndefined();
+  });
+
+  it('un color inválido no impide la carga y se detecta', () => {
+    const board = parseBoard(withProjects([{ id: 'a', name: 'A', color: 'azulito' }]));
+    expect(invalidProjectColors(board).map((p) => p.color)).toEqual(['azulito']);
+    expect(JSON.parse(serializeBoard(board)).projects[0].color).toBe('azulito');
+  });
+
+  it('proyecto desconocido: carga, conserva y avisa', () => {
+    const board = parseBoard(withProjects([{ id: 'a', name: 'A' }], 'legacy'));
+    expect(unknownProjects(board)).toEqual(['legacy']);
+    expect(JSON.parse(serializeBoard(board)).columns[0].tasks[0].project).toBe('legacy');
+    expect(unknownProjects(parseBoard(withProjects([{ id: 'a', name: 'A' }], 'a')))).toEqual([]);
+  });
+
+  it('round-trip con y sin proyectos', () => {
+    const block = [{ id: 'darwin', name: 'Darwin', color: '#FF8800' }];
+    const out = JSON.parse(serializeBoard(parseBoard(withProjects(block, 'darwin'))));
+    expect(out.projects).toEqual(block);
+    expect(out.columns[0].tasks[0].project).toBe('darwin');
+    const plain = JSON.parse(serializeBoard(load()));
+    expect('projects' in plain).toBe(false);
+    expect(JSON.stringify(plain)).not.toContain('"project"');
+  });
+
+  it('addProject genera un id único por slug', () => {
+    let board = addProject(load(), 'Portal Informes', 'blue');
+    board = addProject(board, 'Portal Informes');
+    expect(board.projects).toEqual([
+      { id: 'portal-informes', name: 'Portal Informes', color: 'blue' },
+      { id: 'portal-informes-2', name: 'Portal Informes' },
+    ]);
+    expect(() => addProject(load(), '  ')).toThrow(BoardError);
+  });
+
+  it('updateProject cambia nombre/color y no toca el hex si no se pasa color', () => {
+    const board = parseBoard(withProjects([{ id: 'd', name: 'Darwin', color: '#ff8800' }]));
+    expect(updateProject(board, 'd', { name: 'Darwin 2' }).projects?.[0]).toEqual({ id: 'd', name: 'Darwin 2', color: '#ff8800' });
+    expect(updateProject(board, 'd', { color: 'pink' }).projects?.[0]?.color).toBe('pink');
+    expect(updateProject(board, 'd', { color: null }).projects?.[0]).toEqual({ id: 'd', name: 'Darwin' });
+    expect(() => updateProject(board, 'x', {})).toThrow(/does not exist/);
+  });
+
+  it('updateTask asigna y quita project', () => {
+    const id = load().columns[0]!.tasks[0]!.id;
+    const withP = updateTask(load(), id, { project: 'portal' });
+    expect(withP.columns[0]!.tasks[0]!.project).toBe('portal');
+    expect(updateTask(withP, id, { project: null }).columns[0]!.tasks[0]!.project).toBeUndefined();
   });
 });

@@ -1,4 +1,4 @@
-import { Board, BoardError, Column, DEFAULT_PRIORITIES, Priority, Task } from './model';
+import { Board, BoardError, Column, DEFAULT_PRIORITIES, Priority, Project, Task } from './model';
 
 const KNOWN_TASK_KEYS = [
   'id',
@@ -6,6 +6,7 @@ const KNOWN_TASK_KEYS = [
   'description',
   'assignee',
   'priority',
+  'project',
   'labels',
   'createdAt',
   'dueDate',
@@ -44,6 +45,10 @@ function parseTask(raw: unknown, where: string): Task {
   if (raw.priority !== undefined) {
     if (typeof raw.priority !== 'string') throw new BoardError(`${at}: priority must be a string`);
     task.priority = raw.priority;
+  }
+  if (raw.project !== undefined) {
+    if (typeof raw.project !== 'string') throw new BoardError(`${at}: project must be a string`);
+    task.project = raw.project;
   }
   if (raw.labels !== undefined) {
     if (!Array.isArray(raw.labels) || raw.labels.some((l) => typeof l !== 'string')) {
@@ -93,6 +98,21 @@ function parsePriorities(raw: unknown): Priority[] {
   });
 }
 
+function parseProjects(raw: unknown): Project[] {
+  if (!Array.isArray(raw)) throw new BoardError('"projects" must be a list');
+  const seen = new Set<string>();
+  return raw.map((p, i) => {
+    if (!isRecord(p)) throw new BoardError(`projects[${i}] must be an object`);
+    const id = requireString(p.id, `projects[${i}].id`);
+    if (seen.has(id)) throw new BoardError(`Duplicate project id: ${id}`);
+    seen.add(id);
+    const project: Project = { id, name: requireString(p.name, `projects[${i}].name`) };
+    const color = optionalString(p.color, `projects[${i}].color`);
+    if (color !== undefined) project.color = color;
+    return project;
+  });
+}
+
 export function parseBoard(text: string): Board {
   let raw: unknown;
   try {
@@ -113,6 +133,7 @@ export function parseBoard(text: string): Board {
 
   const board: Board = { board: requireString(raw.board, 'board'), columns };
   if (raw.priorities !== undefined) board.priorities = parsePriorities(raw.priorities);
+  if (raw.projects !== undefined) board.projects = parseProjects(raw.projects);
   assertValid(board);
   return board;
 }
@@ -140,6 +161,7 @@ export function serializeBoard(board: Board): string {
   const out = {
     board: board.board,
     ...(board.priorities ? { priorities: board.priorities.map((p) => ({ ...p })) } : {}),
+    ...(board.projects ? { projects: board.projects.map((p) => ({ ...p })) } : {}),
     columns: board.columns.map((c) => ({ id: c.id, name: c.name, tasks: c.tasks.map(serializeTask) })),
   };
   return JSON.stringify(out, null, 2) + '\n';

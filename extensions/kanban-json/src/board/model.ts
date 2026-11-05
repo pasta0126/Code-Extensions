@@ -18,6 +18,42 @@ export const LEGACY_PRIORITY_IDS: Readonly<Record<string, string>> = {
   baja: 'low',
 };
 
+export interface Project {
+  id: string;
+  name: string;
+  /** Palette name or `#RGB`/`#RRGGBB`; kept verbatim even when invalid. */
+  color?: string;
+}
+
+/** Fixed palette (mid tones that read on light and dark themes). */
+export const PROJECT_COLORS: Readonly<Record<string, string>> = {
+  red: '#e5484d',
+  orange: '#f76b15',
+  amber: '#f5a524',
+  yellow: '#e5c100',
+  lime: '#84cc16',
+  green: '#30a46c',
+  emerald: '#10b981',
+  teal: '#14b8a6',
+  cyan: '#06b6d4',
+  sky: '#38a9f0',
+  blue: '#3b82f6',
+  indigo: '#6366f1',
+  violet: '#8b5cf6',
+  purple: '#a855f7',
+  pink: '#ec4899',
+  gray: '#8b8d98',
+};
+
+const HEX_COLOR = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i;
+
+/** Effective CSS color for a project color value, or undefined when absent/invalid. */
+export function resolveProjectColor(color: string | undefined): string | undefined {
+  if (color === undefined) return undefined;
+  if (Object.prototype.hasOwnProperty.call(PROJECT_COLORS, color)) return PROJECT_COLORS[color];
+  return HEX_COLOR.test(color) ? color : undefined;
+}
+
 export class BoardError extends Error {
   constructor(message: string) {
     super(message);
@@ -31,6 +67,7 @@ export interface Task {
   description?: string;
   assignee?: string;
   priority?: string;
+  project?: string;
   labels?: string[];
   createdAt?: string;
   dueDate?: string | null;
@@ -48,6 +85,8 @@ export interface Board {
   board: string;
   /** Custom priority levels; absent means DEFAULT_PRIORITIES. */
   priorities?: Priority[];
+  /** Optional projects; tasks reference them by id. */
+  projects?: Project[];
   columns: Column[];
 }
 
@@ -57,6 +96,7 @@ export type TaskPatch = {
   description?: string | null;
   assignee?: string | null;
   priority?: string | null;
+  project?: string | null;
   labels?: string[] | null;
   dueDate?: string | null;
 };
@@ -81,4 +121,21 @@ export function unknownPriorities(board: Board): string[] {
     }
   }
   return [...unknown];
+}
+
+/** Distinct project ids used by tasks that the board does not define. */
+export function unknownProjects(board: Board): string[] {
+  const known = new Set((board.projects ?? []).map((p) => p.id));
+  const unknown = new Set<string>();
+  for (const column of board.columns) {
+    for (const task of column.tasks) {
+      if (task.project !== undefined && !known.has(task.project)) unknown.add(task.project);
+    }
+  }
+  return [...unknown];
+}
+
+/** Projects whose `color` is neither a palette name nor a valid hex. */
+export function invalidProjectColors(board: Board): Project[] {
+  return (board.projects ?? []).filter((p) => p.color !== undefined && resolveProjectColor(p.color) === undefined);
 }

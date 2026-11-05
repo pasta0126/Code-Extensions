@@ -22,4 +22,4 @@
 
 - [x] 4.1 Tests unitarios del núcleo
 - [x] 4.2 Typecheck y build
-- [ ] 4.3 Prueba manual en Extension Development Host (F5)
+- [x] 4.3 Prueba manual en Extension Development Host (F5)

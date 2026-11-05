@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.0
+
+- New optional `projects` block in `kanban.json` and `project` field on tasks; cards show a colored stripe and the project name.
+- 16 palette colors selectable from the UI; custom colors via a hex value (`#RRGGBB` / `#RGB`) written in the JSON.
+- Create and edit projects from the task dialog.
+- Dialogs close when clicking outside them (a drag that ends outside does not close them).
+- Undefined projects and invalid colors no longer fail to load; a warning is shown.
+
 ## 0.3.0
 
 - **BREAKING:** the default priority ids are now `high`, `medium` and `low` (previously `alta`, `media`, `baja`). Boards created with this version include a `priorities` block and are not valid in earlier versions.
