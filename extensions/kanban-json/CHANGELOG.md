@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.1
+
+- The task dialog's project selector now labels the empty option "No project" (previously "—"), making it clear how to remove a task's project.
+
 ## 0.5.0
 
 - Filter the board by project from the toolbar ("All projects", "No project" or a project); the filter is view-only and does not change `kanban.json`.

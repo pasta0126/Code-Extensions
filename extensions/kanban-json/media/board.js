@@ -347,7 +347,7 @@
     const project = h('select', {});
     const editProject = h('button', { type: 'button', class: 'icon', title: 'Edit project' }, '✎');
     const fillProjects = () => {
-      project.replaceChildren(h('option', { value: '' }, '—'));
+      project.replaceChildren(h('option', { value: '' }, 'No project'));
       for (const p of sortedProjects()) project.append(h('option', { value: p.id }, p.name));
       // keep an unknown stored id selectable so saving does not drop it
       if (currentProject && !findProject(currentProject)) project.append(h('option', { value: currentProject }, currentProject));
