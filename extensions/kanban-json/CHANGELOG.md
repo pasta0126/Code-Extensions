@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.0
+
+- New "Group by project" option in the toolbar: each column shows its cards in blocks per project (alphabetical, "No project" last, with the project color). It is view-only and combines with the project filter.
+
 ## 0.5.1
 
 - The task dialog's project selector now labels the empty option "No project" (previously "—"), making it clear how to remove a task's project.

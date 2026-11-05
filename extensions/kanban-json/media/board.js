@@ -9,6 +9,7 @@
     priorityAliases: {},
     projects: [],
     projectPalette: {},
+    groupBy: '', // view-only: '' = flat list, 'project' = blocks per project inside each column
     projectFilter: '', // view-only: '' = all, NO_PROJECT = tasks without project, or a project id
     onProjects: null,
     error: null,
@@ -90,16 +91,31 @@
     if (s.projects.some((p) => p.id === f)) return true;
     return !!s.board && s.board.columns.some((c) => c.tasks.some((t) => t.project === f));
   }
+  const groupKey = (task) => task.project || '';
+  const groupLabel = (key) => {
+    if (key === '') return 'No project';
+    const p = findProject(key);
+    return p ? p.name : key;
+  };
+  /** Visible tasks of a column in the order they are shown: filtered, then grouped by project (stable) when enabled. */
+  function displayOrder(column) {
+    const visible = column.tasks.filter(matchesFilter);
+    if (s.groupBy !== 'project') return visible;
+    const keys = [...new Set(visible.map(groupKey))];
+    const named = keys.filter((k) => k !== '').sort((a, b) => groupLabel(a).localeCompare(groupLabel(b), undefined, { sensitivity: 'base' }));
+    const order = keys.includes('') ? [...named, ''] : named;
+    return order.flatMap((k) => visible.filter((task) => groupKey(task) === k));
+  }
   /**
-   * Maps a drop position among the visible cards (dragged one excluded) to an index in the
+   * Maps a drop position among the displayed cards (dragged one excluded) to an index in the
    * column's full task list (dragged one excluded), so hidden tasks keep their relative order.
    */
   function visibleToRealIndex(column, draggedId, visibleIndex) {
     const real = column.tasks.filter((t) => t.id !== draggedId);
-    const visible = real.filter(matchesFilter);
-    if (visibleIndex < visible.length) return real.indexOf(visible[visibleIndex]);
-    if (visible.length === 0) return real.length;
-    return real.indexOf(visible[visible.length - 1]) + 1;
+    const shown = displayOrder(column).filter((t) => t.id !== draggedId);
+    if (visibleIndex < shown.length) return real.indexOf(shown[visibleIndex]);
+    if (shown.length === 0) return real.length;
+    return real.indexOf(shown[shown.length - 1]) + 1;
   }
 
   // ---------- rendering ----------
@@ -113,6 +129,7 @@
       { class: 'toolbar' },
       h('span', { class: 'title' }, s.board ? s.board.board : ''),
       s.board && filterSelect(),
+      s.board && groupSelect(),
       h('button', { class: 'link', onclick: openAsText }, 'Open as text'),
     );
   }
@@ -130,6 +147,21 @@
     sel.value = s.projectFilter;
     sel.addEventListener('change', () => {
       s.projectFilter = sel.value;
+      render();
+    });
+    return sel;
+  }
+
+  function groupSelect() {
+    const sel = h(
+      'select',
+      { class: 'project-filter', title: 'Group cards', 'aria-label': 'Group cards' },
+      h('option', { value: '' }, 'No grouping'),
+      h('option', { value: 'project' }, 'Group by project'),
+    );
+    sel.value = s.groupBy;
+    sel.addEventListener('change', () => {
+      s.groupBy = sel.value;
       render();
     });
     return sel;
@@ -182,8 +214,30 @@
     );
   }
 
+  /** Cards, with a header element before each project block when grouping is on (headers are not cards). */
+  function cardsWithGroups(tasks) {
+    if (s.groupBy !== 'project') return tasks.map(cardView);
+    const out = [];
+    let last;
+    for (const task of tasks) {
+      const key = groupKey(task);
+      if (key !== last) {
+        const head = h('div', { class: 'group-head' }, groupLabel(key));
+        const p = key ? findProject(key) : undefined;
+        if (p && p.color && SAFE_COLOR.test(p.color)) {
+          head.style.setProperty('--project-color', p.color);
+          head.classList.add('has-project');
+        }
+        out.push(head);
+        last = key;
+      }
+      out.push(cardView(task));
+    }
+    return out;
+  }
+
   function columnView(column) {
-    const list = h('div', { class: 'tasks', 'data-column': column.id }, column.tasks.filter(matchesFilter).map(cardView));
+    const list = h('div', { class: 'tasks', 'data-column': column.id }, cardsWithGroups(displayOrder(column)));
     list.addEventListener('dragover', (e) => {
       e.preventDefault();
       list.classList.add('over');

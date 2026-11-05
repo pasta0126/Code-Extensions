@@ -105,3 +105,9 @@ dialog label span { display: block; font-size: .85em; opacity: .8; margin-bottom
 .swatch:hover:not(:disabled) { background: var(--swatch); border-color: var(--vscode-focusBorder); }
 .swatch[aria-checked="true"] { border-color: var(--vscode-foreground); outline: 2px solid var(--vscode-focusBorder); outline-offset: 1px; }
 .project-filter { width: auto; max-width: 220px; }
+.group-head {
+  font-size: .8em; font-weight: 600; text-transform: uppercase; letter-spacing: .04em;
+  opacity: .8; margin: 8px 0 2px; padding: 2px 0 2px 6px;
+}
+.group-head:first-child { margin-top: 0; }
+.group-head.has-project { border-left: 4px solid var(--project-color); }
