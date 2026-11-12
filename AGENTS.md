@@ -19,7 +19,7 @@ Desarrollo dirigido por especificaciones. Antes de escribir código para una fun
 - Los requisitos usan `SHALL` y cada uno lleva al menos un `#### Scenario:` con `WHEN`/`THEN`.
 - Si la implementación se desvía de la spec o el diseño, actualiza los artefactos del cambio (`/opsx:update`) en lugar de dejarlos desfasados.
 - Marca las tareas en `tasks.md` (`- [x]`) a medida que se completan.
-- Cambios activos: ninguno.
+- Cambios activos: `promote-kanban-json` (ficha del Marketplace, publicación en Open VSX y plan de difusión de `kanban-json`; pendiente de aplicar).
 
 ## Añadir una extensión nueva
 
