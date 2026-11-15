@@ -111,3 +111,11 @@ dialog label span { display: block; font-size: .85em; opacity: .8; margin-bottom
 }
 .group-head:first-child { margin-top: 0; }
 .group-head.has-project { border-left: 4px solid var(--project-color); }
+
+.calendar { margin-top: 6px; padding: 8px; border: 1px solid var(--vscode-widget-border, var(--vscode-focusBorder)); border-radius: 4px; }
+.cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
+.cal-dow { font-size: .75em; opacity: .7; }
+.cal-day { padding: 3px 0; }
+.cal-day.today { outline: 1px solid var(--vscode-focusBorder); }
+.cal-day.selected { background: var(--vscode-button-background); color: var(--vscode-button-foreground); }

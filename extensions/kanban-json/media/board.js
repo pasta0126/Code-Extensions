@@ -9,6 +9,8 @@
     priorityAliases: {},
     projects: [],
     projectPalette: {},
+    dateFormat: 'yyyy-mm-dd',
+    firstDayOfWeek: 1, // 0 = Sunday ... 6 = Saturday
     groupBy: '', // view-only: '' = flat list, 'project' = blocks per project inside each column
     projectFilter: '', // view-only: '' = all, NO_PROJECT = tasks without project, or a project id
     onProjects: null,
@@ -45,6 +47,8 @@
       s.priorityAliases = msg.priorityAliases || {};
       s.projects = msg.projects || [];
       s.projectPalette = msg.projectPalette || {};
+      s.dateFormat = msg.dateFormat || 'yyyy-mm-dd';
+      s.firstDayOfWeek = typeof msg.firstDayOfWeek === 'number' ? msg.firstDayOfWeek : 1;
       s.error = msg.error;
       if (!filterStillValid()) s.projectFilter = '';
       render();
@@ -292,7 +296,7 @@
         'div',
         { class: 'card-foot' },
         h('span', {}, task.assignee || ''),
-        task.dueDate && h('span', { class: 'due' + (isOverdue(task, s.board) ? ' overdue' : '') }, '📅 ' + task.dueDate),
+        task.dueDate && h('span', { class: 'due' + (isOverdue(task, s.board) ? ' overdue' : '') }, '📅 ' + formatDate(task.dueDate)),
       ),
     );
     if (project && project.color && SAFE_COLOR.test(project.color)) card.style.setProperty('--project-color', project.color);
@@ -306,6 +310,123 @@
       clearDropMarker();
     });
     return card;
+  }
+
+  // ---------- dates ----------
+  // Mirrors src/board/dates.ts (the host sends an already validated, lowercase pattern). Stored dates are always ISO.
+  const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const WEEKDAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+  const pad = (n, len) => String(n).padStart(len || 2, '0');
+  const isRealDate = (y, m, d) => {
+    const t = new Date(Date.UTC(y, m - 1, d));
+    return t.getUTCFullYear() === y && t.getUTCMonth() === m - 1 && t.getUTCDate() === d;
+  };
+  const todayIso = () => {
+    const t = new Date();
+    return t.getFullYear() + '-' + pad(t.getMonth() + 1) + '-' + pad(t.getDate());
+  };
+
+  /** ISO (yyyy-mm-dd) -> text in the board's dateFormat; non-ISO values are returned untouched. */
+  function formatDate(iso) {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+    if (!m || !isRealDate(+m[1], +m[2], +m[3])) return iso;
+    return s.dateFormat.replace(/yyyy|mm|dd/g, (t) => (t === 'yyyy' ? m[1] : t === 'mm' ? m[2] : m[3]));
+  }
+
+  /** Text in the board's dateFormat -> ISO, or null when it is not a real date. */
+  function parseDate(text) {
+    const order = [];
+    const source = s.dateFormat.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/yyyy|mm|dd/g, (t) => {
+      order.push(t);
+      return t === 'yyyy' ? '(\\d{4})' : '(\\d{1,2})';
+    });
+    const m = new RegExp('^' + source + '$').exec(text.trim());
+    if (!m) return null;
+    const p = {};
+    order.forEach((t, i) => (p[t] = +m[i + 1]));
+    if (!isRealDate(p.yyyy, p.mm, p.dd)) return null;
+    return pad(p.yyyy, 4) + '-' + pad(p.mm) + '-' + pad(p.dd);
+  }
+
+  /** Text field (in dateFormat) plus an inline month calendar starting the week on firstDayOfWeek. */
+  function dateField(label, isoValue) {
+    const input = h('input', { type: 'text', placeholder: s.dateFormat, value: isoValue ? formatDate(isoValue) : '' });
+    const toggle = h('button', { type: 'button', class: 'icon', title: 'Pick a date' }, '📅');
+    const cal = h('div', { class: 'calendar', hidden: true });
+    let shown = null; // { y, m } month being displayed
+
+    const current = () => parseDate(input.value);
+    const validate = () => {
+      input.setCustomValidity(input.value.trim() === '' || current() ? '' : 'Use the format ' + s.dateFormat);
+    };
+
+    function draw() {
+      const today = todayIso();
+      const chosen = current();
+      const first = new Date(shown.y, shown.m, 1).getDay();
+      const lead = (first - s.firstDayOfWeek + 7) % 7;
+      const days = new Date(shown.y, shown.m + 1, 0).getDate();
+      const move = (delta) => {
+        const d = new Date(shown.y, shown.m + delta, 1);
+        shown = { y: d.getFullYear(), m: d.getMonth() };
+        draw();
+      };
+      const grid = h('div', { class: 'cal-grid' });
+      for (let i = 0; i < 7; i++) grid.append(h('span', { class: 'cal-dow' }, WEEKDAYS[(s.firstDayOfWeek + i) % 7]));
+      for (let i = 0; i < lead; i++) grid.append(h('span', {}));
+      for (let d = 1; d <= days; d++) {
+        const iso = shown.y + '-' + pad(shown.m + 1) + '-' + pad(d);
+        grid.append(
+          h(
+            'button',
+            {
+              type: 'button',
+              class: 'cal-day' + (iso === today ? ' today' : '') + (iso === chosen ? ' selected' : ''),
+              onclick: () => {
+                input.value = formatDate(iso);
+                validate();
+                cal.hidden = true;
+              },
+            },
+            String(d),
+          ),
+        );
+      }
+      cal.replaceChildren(
+        h(
+          'div',
+          { class: 'cal-head' },
+          h('button', { type: 'button', class: 'icon', title: 'Previous month', onclick: () => move(-1) }, '‹'),
+          h('strong', {}, MONTHS[shown.m] + ' ' + shown.y),
+          h('button', { type: 'button', class: 'icon', title: 'Next month', onclick: () => move(1) }, '›'),
+        ),
+        grid,
+      );
+    }
+
+    toggle.addEventListener('click', () => {
+      if (!cal.hidden) {
+        cal.hidden = true;
+        return;
+      }
+      const base = current() || todayIso();
+      shown = { y: +base.slice(0, 4), m: +base.slice(5, 7) - 1 };
+      draw();
+      cal.hidden = false;
+    });
+    input.addEventListener('input', validate);
+    // Esc closes only the calendar, not the whole dialog.
+    const swallowEsc = (e) => {
+      if (e.key === 'Escape' && !cal.hidden) {
+        e.preventDefault();
+        e.stopPropagation();
+        cal.hidden = true;
+      }
+    };
+    const el = h('div', { class: 'field', onkeydown: swallowEsc }, h('span', {}, label), h('div', { class: 'project-row' }, input, toggle), cal);
+    validate();
+    /** ISO date or null (empty or invalid). */
+    return { el, value: () => (input.value.trim() === '' ? null : current()) };
   }
 
   function isOverdue(task, board) {
@@ -436,7 +557,7 @@
       if (p) projectDialog(p);
     });
     const labels = h('input', { type: 'text', placeholder: 'comma-separated', value: task && task.labels ? task.labels.join(', ') : '' });
-    const due = h('input', { type: 'date', value: task && task.dueDate ? task.dueDate : '' });
+    const due = dateField('Due date', task && task.dueDate ? task.dueDate : '');
 
     const dlg = h(
       'dialog',
@@ -451,7 +572,7 @@
         f('Priority', priority),
         f('Project', h('div', { class: 'project-row' }, project, editProject)),
         f('Labels', labels),
-        f('Due date', due),
+        due.el,
         h(
           'div',
           { class: 'dialog-bar' },
@@ -471,7 +592,7 @@
           priority: priority.value || null,
           project: currentProject || null,
           labels: labels.value.split(',').map((l) => l.trim()).filter(Boolean),
-          dueDate: due.value || null,
+          dueDate: due.value(),
         };
         if (task) op({ kind: 'updateTask', taskId: task.id, patch: fields });
         else op({ kind: 'addTask', columnId, task: dropNulls(fields) });

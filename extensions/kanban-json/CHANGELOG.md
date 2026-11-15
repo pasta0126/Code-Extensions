@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.0
+
+- New optional `dateFormat` (default `yyyy-mm-dd`, e.g. `dd/mm/yyyy`) and `firstDayOfWeek` (default `monday`) keys in `kanban.json`. Dates on cards and in the task dialog use the format; the due date field now has its own calendar that starts the week on the chosen day. Dates are still stored as `yyyy-mm-dd`.
+
 ## 0.6.0
 
 - New "Group by project" option in the toolbar: each column shows its cards in blocks per project (alphabetical, "No project" last, with the project color). It is view-only and combines with the project filter.

@@ -56,6 +56,14 @@ Column ids and task ids must be unique.
 
 If `priorities` is missing, those three defaults are used, and the old ids `alta`, `media` and `baja` are read as `high`, `medium` and `low` (files are not rewritten). A task whose priority is not defined still loads: it shows the raw id in a neutral style and a warning is displayed.
 
+### Dates and calendar
+
+`dateFormat` and `firstDayOfWeek` are optional. `dateFormat` is a pattern using `yyyy`, `mm` and `dd` once each, with any separators (default `"yyyy-mm-dd"`, e.g. `"dd/mm/yyyy"`). `firstDayOfWeek` is `monday` (default) to `sunday`. They control how due dates are shown and typed and how the calendar picker is laid out; dates are always stored as `yyyy-mm-dd`. Invalid values fall back to the defaults with a warning.
+
+```json
+{ "board": "Team", "dateFormat": "dd/mm/yyyy", "firstDayOfWeek": "sunday", "columns": [] }
+```
+
 ### Projects
 
 `projects` is optional and defines the projects tasks can belong to. Each entry has an `id`, a `name` and an optional `color`. A task references a project with `"project": "<id>"`, and its card shows a colored stripe on the left plus the project name.

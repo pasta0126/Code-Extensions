@@ -83,6 +83,9 @@ export interface Column {
 
 export interface Board {
   board: string;
+  /** Raw `dateFormat` / `firstDayOfWeek` as written in the file (resolved via dates.ts); kept verbatim. */
+  dateFormat?: unknown;
+  firstDayOfWeek?: unknown;
   /** Custom priority levels; absent means DEFAULT_PRIORITIES. */
   priorities?: Priority[];
   /** Optional projects; tasks reference them by id. */

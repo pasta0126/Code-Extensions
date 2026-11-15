@@ -13,6 +13,7 @@ import {
   unknownPriorities,
   unknownProjects,
 } from '../board/model';
+import { isValidDateFormat, isValidFirstDay, resolveDateFormat, resolveFirstDay } from '../board/dates';
 import * as ops from '../board/operations';
 import { Operation, StateMessage, WebviewMessage } from './protocol';
 
@@ -47,6 +48,8 @@ export class KanbanEditorProvider implements vscode.CustomTextEditorProvider {
             paletteName: p.color !== undefined && p.color in PROJECT_COLORS ? p.color : undefined,
           })),
           projectPalette: { ...PROJECT_COLORS },
+          dateFormat: resolveDateFormat(board.dateFormat),
+          firstDayOfWeek: resolveFirstDay(board.firstDayOfWeek),
         };
         const unknown = unknownPriorities(board).join(', ');
         if (unknown !== warnedUnknown) {
@@ -58,6 +61,12 @@ export class KanbanEditorProvider implements vscode.CustomTextEditorProvider {
         const problems = [
           ...unknownProjects(board).map((id) => `undefined project "${id}"`),
           ...invalidProjectColors(board).map((p) => `invalid color "${p.color}" in project "${p.name}"`),
+          ...(board.dateFormat !== undefined && !isValidDateFormat(board.dateFormat)
+            ? [`invalid dateFormat ${JSON.stringify(board.dateFormat)} (using yyyy-mm-dd)`]
+            : []),
+          ...(board.firstDayOfWeek !== undefined && !isValidFirstDay(board.firstDayOfWeek)
+            ? [`invalid firstDayOfWeek ${JSON.stringify(board.firstDayOfWeek)} (using monday)`]
+            : []),
         ].join('; ');
         if (problems !== warnedProjects) {
           warnedProjects = problems;
@@ -73,6 +82,8 @@ export class KanbanEditorProvider implements vscode.CustomTextEditorProvider {
           priorityAliases: {},
           projects: [],
           projectPalette: { ...PROJECT_COLORS },
+          dateFormat: resolveDateFormat(undefined),
+          firstDayOfWeek: resolveFirstDay(undefined),
         };
       }
       void panel.webview.postMessage(msg);

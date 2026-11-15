@@ -13,6 +13,10 @@ export type StateMessage = {
   projects: ProjectView[];
   /** Fixed palette: name -> CSS color. */
   projectPalette: Record<string, string>;
+  /** Effective date pattern (e.g. `yyyy-mm-dd`). */
+  dateFormat: string;
+  /** Effective first day of the week: 0 = Sunday ... 6 = Saturday. */
+  firstDayOfWeek: number;
   error: string | null;
 };
 

@@ -132,6 +132,8 @@ export function parseBoard(text: string): Board {
   });
 
   const board: Board = { board: requireString(raw.board, 'board'), columns };
+  if (raw.dateFormat !== undefined) board.dateFormat = raw.dateFormat;
+  if (raw.firstDayOfWeek !== undefined) board.firstDayOfWeek = raw.firstDayOfWeek;
   if (raw.priorities !== undefined) board.priorities = parsePriorities(raw.priorities);
   if (raw.projects !== undefined) board.projects = parseProjects(raw.projects);
   assertValid(board);
@@ -160,6 +162,8 @@ export function createInitialBoard(name: string): Board {
 export function serializeBoard(board: Board): string {
   const out = {
     board: board.board,
+    ...(board.dateFormat !== undefined ? { dateFormat: board.dateFormat } : {}),
+    ...(board.firstDayOfWeek !== undefined ? { firstDayOfWeek: board.firstDayOfWeek } : {}),
     ...(board.priorities ? { priorities: board.priorities.map((p) => ({ ...p })) } : {}),
     ...(board.projects ? { projects: board.projects.map((p) => ({ ...p })) } : {}),
     columns: board.columns.map((c) => ({ id: c.id, name: c.name, tasks: c.tasks.map(serializeTask) })),

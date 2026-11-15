@@ -1,6 +1,13 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import {
+  formatDate,
+  isValidDateFormat,
+  parseDate,
+  resolveDateFormat,
+  resolveFirstDay,
+} from '../src/board/dates';
 import { createInitialBoard, parseBoard, serializeBoard } from '../src/board/json';
 import {
   BoardError,
@@ -274,5 +281,55 @@ describe('quitar el proyecto de una tarea', () => {
     const board = parseBoard(JSON.stringify(raw));
     const next = updateTask(board, board.columns[0]!.tasks[0]!.id, { project: null });
     expect(next.columns[0]!.tasks[0]!.project).toBeUndefined();
+  });
+});
+
+describe('date-settings', () => {
+  it('defaults: yyyy-mm-dd y lunes', () => {
+    expect(resolveDateFormat(undefined)).toBe('yyyy-mm-dd');
+    expect(resolveFirstDay(undefined)).toBe(1);
+  });
+
+  it('valida el patrón', () => {
+    expect(isValidDateFormat('dd/mm/yyyy')).toBe(true);
+    expect(isValidDateFormat('dd/yyyy')).toBe(false);
+    expect(isValidDateFormat('yyyy mm dd dd')).toBe(false);
+    expect(isValidDateFormat(5)).toBe(false);
+    expect(resolveDateFormat('dd/yyyy')).toBe('yyyy-mm-dd');
+    expect(resolveDateFormat('DD.MM.YYYY')).toBe('dd.mm.yyyy');
+  });
+
+  it('primer día de la semana', () => {
+    expect(resolveFirstDay('sunday')).toBe(0);
+    expect(resolveFirstDay('Saturday')).toBe(6);
+    expect(resolveFirstDay('lunes')).toBe(1);
+  });
+
+  it('formatea ISO y deja intactos los valores no ISO', () => {
+    expect(formatDate('2026-11-05', 'yyyy-mm-dd')).toBe('2026-11-05');
+    expect(formatDate('2026-11-05', 'dd/mm/yyyy')).toBe('05/11/2026');
+    expect(formatDate('2026-11-05', 'mm/dd/yyyy')).toBe('11/05/2026');
+    expect(formatDate('mañana', 'dd/mm/yyyy')).toBe('mañana');
+  });
+
+  it('parsea con el formato y rechaza fechas imposibles', () => {
+    expect(parseDate('05/11/2026', 'dd/mm/yyyy')).toBe('2026-11-05');
+    expect(parseDate('5/1/2026', 'dd/mm/yyyy')).toBe('2026-01-05');
+    expect(parseDate('11/05/2026', 'mm/dd/yyyy')).toBe('2026-11-05');
+    expect(parseDate('31/02/2026', 'dd/mm/yyyy')).toBeNull();
+    expect(parseDate('2026-11-05', 'dd/mm/yyyy')).toBeNull();
+    expect(parseDate('05.11.2026', 'dd.mm.yyyy')).toBe('2026-11-05');
+  });
+
+  it('round-trip conserva las claves y no las añade', () => {
+    const withCfg = JSON.stringify({ board: 'x', dateFormat: 'dd/mm/yyyy', firstDayOfWeek: 'sunday', columns: [] });
+    expect(JSON.parse(serializeBoard(parseBoard(withCfg)))).toEqual(JSON.parse(withCfg));
+    const out = JSON.parse(serializeBoard(load()));
+    expect('dateFormat' in out || 'firstDayOfWeek' in out).toBe(false);
+  });
+
+  it('conserva un valor inválido verbatim', () => {
+    const bad = JSON.stringify({ board: 'x', dateFormat: 'dd/yyyy', columns: [] });
+    expect(JSON.parse(serializeBoard(parseBoard(bad))).dateFormat).toBe('dd/yyyy');
   });
 });
